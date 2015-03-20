@@ -21,7 +21,7 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.vresorts.cordova.bgloc.GeoTrigger.GeotriggerListener;
+import com.vresorts.cordova.bgloc.Geotrigger.GeotriggerListener;
 import com.vresorts.cordova.bgloc.beans.Place;
 import com.vresorts.cordova.bgloc.beans.TripPlan;
 import com.vresorts.cordova.bgloc.parser.PlaceParser;
@@ -29,7 +29,7 @@ import com.vresorts.cordova.bgloc.parser.PlaceUuidParser;
 import com.vresorts.cordova.bgloc.parser.TripPlanParser;
 
 @SuppressLint("NewApi")
-public class BackgroundFencingPlugin extends CordovaPlugin {
+public class BackgroundGeofencingPlugin extends CordovaPlugin {
 	
 	
     private static final String TAG = "BackgroundFencingPlugin";
@@ -46,16 +46,16 @@ public class BackgroundFencingPlugin extends CordovaPlugin {
     
     //public static final String ACTION_SET_CONFIG = "setConfig";
     public static final String ACTION_MOCK = "mock";
-    public static final String ACTION_MOCK_START = "mock_start";
-    public static final String ACTION_MOCK_STOP = "mock_stop";
+    public static final String ACTION_MOCK_START = "startMock";
+    public static final String ACTION_MOCK_STOP = "stopMock";
     
     private boolean isStarted = false;
     
     private TripPlan tripPlan;
     
-    private GeoFaker geoFaker;
+    private Geofaker geoFaker;
     
-    private GeoTrigger geoTrigger;
+    private Geotrigger geoTrigger;
     
     @TargetApi(16)
     private Notification buildForegroundNotification(Notification.Builder builder) {
@@ -72,9 +72,9 @@ public class BackgroundFencingPlugin extends CordovaPlugin {
 
 		@Override
 		public void onEnter(Place place, long time) {
-			Activity activity = BackgroundGpsPlugin.this.cordova.getActivity();
+			Activity activity = BackgroundGeofencingPlugin.this.cordova.getActivity();
 			NotificationManager mNotificationManager = (NotificationManager) activity.getSystemService(Context.NOTIFICATION_SERVICE);
-			Intent main = new Intent(activity, BackgroundGpsPlugin.class);
+			Intent main = new Intent(activity, BackgroundGeofencingPlugin.class);
             main.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             PendingIntent pendingIntent = PendingIntent.getActivity(activity, 0, main,  PendingIntent.FLAG_UPDATE_CURRENT);
 
@@ -99,10 +99,10 @@ public class BackgroundFencingPlugin extends CordovaPlugin {
 
 		@Override
 		public void onExit(Place place, long time, long duration) {
-			Activity activity = BackgroundGpsPlugin.this.cordova.getActivity();
+			Activity activity = BackgroundGeofencingPlugin.this.cordova.getActivity();
 			NotificationManager mNotificationManager = (NotificationManager) activity.getSystemService(Context.NOTIFICATION_SERVICE);
 			
-			Intent main = new Intent(activity, BackgroundGpsPlugin.class);
+			Intent main = new Intent(activity, BackgroundGeofencingPlugin.class);
             main.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             PendingIntent pendingIntent = PendingIntent.getActivity(activity, 0, main,  PendingIntent.FLAG_UPDATE_CURRENT);
 
@@ -141,7 +141,7 @@ public class BackgroundFencingPlugin extends CordovaPlugin {
             } else {
             	result = true;
                 if(this.geoTrigger == null){
-                	this.geoTrigger = new GeoTrigger(this.cordova.getActivity(), tripPlan);
+                	this.geoTrigger = new Geotrigger(this.cordova.getActivity(), tripPlan);
                 	this.geoTrigger.setGeotriggerListener(geotriggerListener);
                 }
                 this.geoTrigger.start();
@@ -176,7 +176,7 @@ public class BackgroundFencingPlugin extends CordovaPlugin {
             
             if(tripPlanToConfigure != null){
             tripPlan = tripPlanToConfigure;
-            this.geoTrigger = new GeoTrigger(this.cordova.getActivity(), tripPlan);
+            this.geoTrigger = new Geotrigger(this.cordova.getActivity(), tripPlan);
             this.geoTrigger.setGeotriggerListener(geotriggerListener);
             result = true;
             }
@@ -364,7 +364,7 @@ public class BackgroundFencingPlugin extends CordovaPlugin {
         	if(this.geoFaker != null && this.geoFaker.isStarted()){
         		callbackContext.error("geofaker has started");
         	}
-        	this.geoFaker = new GeoFaker(this.cordova.getActivity());
+        	this.geoFaker = new Geofaker(this.cordova.getActivity());
         	this.geoFaker.start();
         }
         else if(ACTION_MOCK_STOP.equalsIgnoreCase(action)){
@@ -377,8 +377,8 @@ public class BackgroundFencingPlugin extends CordovaPlugin {
         }
         else if(ACTION_MOCK.equalsIgnoreCase(action)){
         	Intent intent = new Intent();
-        	intent.setAction(GeoFaker.INTENT_MOCK_GPS_PROVIDER);
-        	intent.putExtra(GeoFaker.MOCKED_JSON_COORDINATES, data.toString());
+        	intent.setAction(Geofaker.INTENT_MOCK_GPS_PROVIDER);
+        	intent.putExtra(Geofaker.MOCKED_JSON_COORDINATES, data.toString());
         	activity.sendBroadcast(intent);
         	result = true;
         	callbackContext.success();

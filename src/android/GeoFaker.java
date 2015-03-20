@@ -22,7 +22,7 @@ import android.util.Log;
 import com.vresorts.cordova.bgloc.beans.Place;
 
 @SuppressLint("NewApi")
-public class GeoFaker {
+public class Geofaker {
 	 private Context context;
 	 
 	 public static final String MOCKED_JSON_COORDINATES = "MOCKED_JSON_COORDINATES";
@@ -31,11 +31,11 @@ public class GeoFaker {
 	    
 	 private MockGpsProvider mockGpsProvider;
 	 
-	 private GeoTrigger geotrigger;
+	 private Geotrigger geotrigger;
 	 
 	 private boolean isStarted = false;
 	 
-	 public GeoFaker(Context context){
+	 public Geofaker(Context context){
 		 this.context = context;
 	 }
 	 private BroadcastReceiver mockGpsUpdatesReceiver = new BroadcastReceiver(){
@@ -63,11 +63,11 @@ public class GeoFaker {
 	    
 	    
 	    
-	   public GeoTrigger getGeotrigger() {
+	   public Geotrigger getGeotrigger() {
 		return geotrigger;
 	}
 
-	public void setGeotrigger(GeoTrigger geotrigger) {
+	public void setGeotrigger(Geotrigger geotrigger) {
 		this.geotrigger = geotrigger;
 	}
 

@@ -14,9 +14,9 @@ import com.vresorts.cordova.bgloc.beans.Geofence;
 import com.vresorts.cordova.bgloc.beans.Place;
 import com.vresorts.cordova.bgloc.beans.TripPlan;
 
-public class GeoTrigger {
+public class Geotrigger {
 	
-	private final static String TAG = GeoTrigger.class.getName();
+	private final static String TAG = Geotrigger.class.getName();
 	
 	private TripPlan tripplan;
 	
@@ -42,12 +42,12 @@ public class GeoTrigger {
 		this.geotriggerListener = geotriggerListener;
 	}
 
-	public GeoTrigger(Context context, TripPlan tripPlan){
+	public Geotrigger(Context context, TripPlan tripPlan){
 		this(context);
 		this.tripplan = tripPlan;
 	}
 	
-	public GeoTrigger(Context context){
+	public Geotrigger(Context context){
 		this.context = context;
 			}
 	

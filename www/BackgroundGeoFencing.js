@@ -3,7 +3,7 @@ module.exports = {
     getCurrentLocation: function(succuss, failure){
     	 exec(success || function(coordinates) {},
                  failure || function() {},
-                 'BackgroundGeoFencing',
+                 'BackgroundGeofencing',
                  'getCurrentLocation',
                  []
           );
@@ -12,7 +12,7 @@ module.exports = {
     disablePlace: function(succuss, failure, placeUuid){
     	 exec(success || function() {},
                  failure || function() {},
-                 'BackgroundGeoFencing',
+                 'BackgroundGeofencing',
                  'disablePlace',
                  [placeUuid]
             );
@@ -21,7 +21,7 @@ module.exports = {
     enablePlace: function(success, failture, placeUuid){
     	 exec(success || function() {},
                  failure || function() {},
-                 'BackgroundGeoFencing',
+                 'BackgroundGeofencing',
                  'enablePlace',
                  [placeUuid]
             );
@@ -30,7 +30,7 @@ module.exports = {
     reconfigure: function(success, failture, tripplan){
     	 exec(success || function() {},
                  failure || function() {},
-                 'BackgroundGeoFencing',
+                 'BackgroundGeofencing',
                  'reconfigure',
                  [tripplan]
             );
@@ -39,7 +39,7 @@ module.exports = {
     addPlace: function(success, failture, place){
     	 exec(success || function() {},
                  failure || function() {},
-                 'BackgroundGeoFencing',
+                 'BackgroundGeofencing',
                  'addPlace',
                  [place]
             );
@@ -48,7 +48,7 @@ module.exports = {
     deletePlace: function(success, failture, placeUuid){
     	 exec(success || function() {},
                  failure || function() {},
-                 'BackgroundGeoFencing',
+                 'BackgroundGeofencing',
                  'deletePlace',
                  [placeUuid]
             );
@@ -58,7 +58,7 @@ module.exports = {
    
         exec(success || function() {},
              failure || function() {},
-             'BackgroundGeoFencing',
+             'BackgroundGeofencing',
              'configure',
              [tripplan]
         );
@@ -67,14 +67,14 @@ module.exports = {
     start: function(success, failure) {
         exec(success || function() {},
              failure || function() {},
-             'BackgroundGeoFencing',
+             'BackgroundGeofencing',
              'start',
              []);
     },
     stop: function(success, failure) {
         exec(success || function() {},
             failure || function() {},
-            'BackgroundGeoFencing',
+            'BackgroundGeofencing',
             'stop',
             []);
     },
@@ -82,24 +82,24 @@ module.exports = {
     mock: function(success, failure, coordinates){
    	 exec(success || function() {},
             failure || function() {},
-            'BackgroundGeoFencing',
+            'BackgroundGeofencing',
             'mock',
             [coordinates]
        );
    },
-   mock_start: function(success, failure, coordinates){
+   startMock: function(success, failure, coordinates){
    	 exec(success || function() {},
             failure || function() {},
-            'BackgroundGeoFencing',
-            'mock_start',
+            'BackgroundGeofencing',
+            'startMock',
             []
        );
    },
-   mock_stop: function(success, failure, coordinates){
+   stopMock: function(success, failure, coordinates){
    	 exec(success || function() {},
             failure || function() {},
-            'BackgroundGeoFencing',
-            'mock_stop',
+            'BackgroundGeofencing',
+            'stopMock',
             []
        );
    },
