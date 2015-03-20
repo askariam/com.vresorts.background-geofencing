@@ -1,7 +1,6 @@
 package com.vresorts.cordova.bgloc;
 
 import java.util.Date;
-import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -19,7 +18,6 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.Log;
 
-import com.vresorts.cordova.bgloc.beans.Place;
 
 @SuppressLint("NewApi")
 public class Geofaker {
@@ -31,8 +29,6 @@ public class Geofaker {
 	    
 	 private MockGpsProvider mockGpsProvider;
 	 
-	 private Geotrigger geotrigger;
-	 
 	 private boolean isStarted = false;
 	 
 	 public Geofaker(Context context){
@@ -42,13 +38,13 @@ public class Geofaker {
 
 			@Override
 			public void onReceive(Context context, Intent intent) {
-				android.os.Debug.waitForDebugger();
+				
 				try {
 					JSONArray coordinatesArray = new JSONArray(intent.getStringExtra(MOCKED_JSON_COORDINATES));
 					for(int index = 0; index < coordinatesArray.length(); index++){
 						JSONObject coordinates = coordinatesArray.getJSONObject(index);
 					if(mockGpsProvider != null){
-						mockGpsProvider.mock(coordinates.getDouble("lat"), coordinates.getDouble("lng"));
+						mockGpsProvider.mock(coordinates.getDouble("latitude"), coordinates.getDouble("longitude"));
 					}
 					}
 				} catch (JSONException e) {
@@ -59,17 +55,6 @@ public class Geofaker {
 			}
 	    	
 	    };
-	    
-	    
-	    
-	    
-	   public Geotrigger getGeotrigger() {
-		return geotrigger;
-	}
-
-	public void setGeotrigger(Geotrigger geotrigger) {
-		this.geotrigger = geotrigger;
-	}
 
 	public void start(){
 		   	mockGpsProvider = new MockGpsProvider(this.context);
@@ -77,30 +62,30 @@ public class Geofaker {
 
 				@Override
 				public void onLocationChanged(Location location) {
-					android.os.Debug.waitForDebugger();
-					if(geotrigger == null){
-						return;
-					}
-					
-					if(geotrigger.isEnabled() || geotrigger.getGeotriggerListener() == null||geotrigger.getTripplan() == null){
-						return;
-					}
-					
-					List<Place> places = geotrigger.getTripplan().getPlaces();
-					
-					for(Place place : places){
-						boolean isLocatedIn = place.isLocatedIn(location);
-						if(isLocatedIn && !place.wasLocatedIn()) {
-							place.setLocatedIn(true);
-							geotrigger.getGeotriggerListener().onEnter(place, place.getTimeStampOnEnter());
-						}
-						else if(!isLocatedIn && place.wasLocatedIn()){
-							 long exitingTime = System.currentTimeMillis();
-				                long duration = exitingTime - place.getTimeStampOnEnter();
-							place.setLocatedIn(false);
-							geotrigger.getGeotriggerListener().onExit(place, exitingTime, duration);
-						}
-					}
+					Log.v(INTENT_MOCK_GPS_PROVIDER, "mocked location:"+location.getLatitude()+location.getLongitude());
+//					if(geotrigger == null){
+//						return;
+//					}
+//					
+//					if(geotrigger.isEnabled() || geotrigger.getGeotriggerListener() == null||geotrigger.getTripplan() == null){
+//						return;
+//					}
+//					
+//					List<Place> places = geotrigger.getTripplan().getPlaces();
+//					
+//					for(Place place : places){
+//						boolean isLocatedIn = place.isLocatedIn(location);
+//						if(isLocatedIn && !place.wasLocatedIn()) {
+//							place.setLocatedIn(true);
+//							geotrigger.getGeotriggerListener().onEnter(place, place.getTimeStampOnEnter());
+//						}
+//						else if(!isLocatedIn && place.wasLocatedIn()){
+//							 long exitingTime = System.currentTimeMillis();
+//				                long duration = exitingTime - place.getTimeStampOnEnter();
+//							place.setLocatedIn(false);
+//							geotrigger.getGeotriggerListener().onExit(place, exitingTime, duration);
+//						}
+//					}
 				}
 
 				@Override
@@ -120,7 +105,7 @@ public class Geofaker {
 				}
 	        	
 	        });
-	        this.mockGpsProvider.enable();
+	        mockGpsProvider.enable();
 	        
 	        context.registerReceiver(this.mockGpsUpdatesReceiver, new IntentFilter(INTENT_MOCK_GPS_PROVIDER));
 	        
@@ -129,7 +114,7 @@ public class Geofaker {
 	   
 	   public void stop(){
 		   if(this.mockGpsProvider != null){
-			   this.mockGpsProvider.destroy();
+			   this.mockGpsProvider.disable();
 		   }
 		   
 		   context.unregisterReceiver(mockGpsUpdatesReceiver);
@@ -151,7 +136,6 @@ public class Geofaker {
 			public static final String LOG_TAG = "GpsMockProvider";
 			public static final String GPS_MOCK_PROVIDER = "GpsMockProvider";
 			
-			private Location templateLocation;
 			
 			private LocationListener locationListener = new LocationListener(){
 
@@ -195,12 +179,8 @@ public class Geofaker {
 			public void enable(){
 				 /** Setup GPS. */
 		        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-//		        if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){ 
-//		        	// use real GPS provider if enabled on the device
-//		            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
-//		        }
-//		        else 
 		        if(!locationManager.isProviderEnabled(MockGpsProvider.GPS_MOCK_PROVIDER)) {
+		        	
 		        	// otherwise enable the mock GPS provider
 		        	locationManager.addTestProvider(MockGpsProvider.GPS_MOCK_PROVIDER, false, false,
 		        			false, false, true, true, true, 0, 5);
@@ -209,57 +189,23 @@ public class Geofaker {
 		        
 		        if(locationManager.isProviderEnabled(MockGpsProvider.GPS_MOCK_PROVIDER)) {
 		        	locationManager.requestLocationUpdates(MockGpsProvider.GPS_MOCK_PROVIDER, 0, 0, locationListener);
-		        	Location location = this.getLastBestLocation(locationManager);
-		        	templateLocation = new Location(location.getProvider());
-		        	templateLocation.setAltitude(location.getAltitude());
-		        	templateLocation.setLatitude(location.getLatitude());
-		        	templateLocation.setLongitude(location.getLongitude());
-		        	templateLocation.setBearing(location.getBearing());
-		        	templateLocation.setSpeed(location.getSpeed());
-		        	templateLocation.setTime(location.getTime());
-		        	templateLocation.setAccuracy(location.getAccuracy());
-		        	templateLocation.setElapsedRealtimeNanos(location.getElapsedRealtimeNanos());
 		        }
 
 			}
 			
-			/**
-			 * @return the last know best location
-			 */
-			private Location getLastBestLocation(LocationManager mLocationManager) {
-			    Location locationGPS = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-			    Location locationNet = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+	public void mock(double latitude, double longitude){
+		LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
 
-			    long GPSLocationTime = 0;
-			    if (null != locationGPS) { GPSLocationTime = locationGPS.getTime(); }
-
-			    long NetLocationTime = 0;
-
-			    if (null != locationNet) {
-			        NetLocationTime = locationNet.getTime();
-			    }
-
-			    if ( 0 < GPSLocationTime - NetLocationTime ) {
-			        return locationGPS;
-			    }
-			    else {
-			        return locationNet;
-			    }
-			}
-			
-			public void mock(double latitude, double longitude){
-				 LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-
-				if(!locationManager.isProviderEnabled(MockGpsProvider.GPS_MOCK_PROVIDER)&&this.templateLocation == null){
-					return;
-				}
+		if(!locationManager.isProviderEnabled(MockGpsProvider.GPS_MOCK_PROVIDER)){
+			return;
+		}
 				
 				Location mockLocation = new Location(GPS_MOCK_PROVIDER);
 				
 				// translate to actual GPS location
-				mockLocation.setBearing(templateLocation.getBearing());
-				mockLocation.setAltitude(templateLocation.getAltitude());
-				mockLocation.setSpeed(templateLocation.getSpeed());
+				mockLocation.setBearing(50.0f);
+				mockLocation.setAltitude(500);
+				mockLocation.setSpeed(5f);
 				mockLocation.setTime(new Date().getTime());
 				mockLocation.setAccuracy(5);
 				mockLocation.setLatitude(latitude);
@@ -275,7 +221,7 @@ public class Geofaker {
 				
 			}
 			
-			public void destroy(){
+			public void disable(){
 				// remove it from the location manager
 		    	try {
 		    		LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);

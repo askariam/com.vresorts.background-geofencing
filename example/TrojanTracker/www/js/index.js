@@ -25,8 +25,8 @@ var ENV = (function() {
             /**
             * state-mgmt
             */
-            enabled:    localStorage.getItem('enabled')     || 'true',
-            aggressive: localStorage.getItem('aggressive')  || 'false'
+            //enabled:    localStorage.getItem('enabled')     || 'true',
+            //aggressive: localStorage.getItem('aggressive')  || 'false'
         },
         toggle: function(key) {
             var value       = localStorage.getItem(key)
@@ -68,12 +68,15 @@ var app = {
     btnReset: undefined,
     btnMock: undefined,
     
-    isMocking: true,
+    isMocking: false,
+    
+    bgGeo: undefined,
+    
+    geofences: [],
 
     // Application Constructor  
     initialize: function() {
         this.bindEvents();
-       
         google.maps.event.addDomListener(window, 'load', app.initializeMap);
        
     },
@@ -91,7 +94,6 @@ var app = {
     	xmlhttp.open("GET", url, true);
     	xmlhttp.send();
     },
-    
     initializeMap: function() {
         var mapOptions = {
           center: { lat: -34.397, lng: 150.644},
@@ -117,17 +119,26 @@ var app = {
     },
     
     onMapClick: function(map, event){
+    	var currentLocationDisplay = $('#current-location');
     	if(!app.isMocking){
     		return;
     	}
-    	//window.confirm(event.latLng);
-        marker = new google.maps.Marker({position: event.latLng, map: map});
-        var coordinates = {lat: event.latLng.k, lng:event.latLng.D};
-        var bgGeo = window.plugins.backgroundGeoLocation;
-        bgGeo.mock(function(){
+    	
+        var coordinates = {latitude: event.latLng.k, longitude:event.latLng.D};
+        
+        currentLocationDisplay[0].innerHTML = "current locaton: lat="+coordinates.latitude+", lng="+coordinates.longitude;
+
+    	app.setCurrentLocation(coordinates);
+    	
+        var bgGeo = window.plugins.backgroundGeofencing;
+        bgGeo.mock(function(msg){
+        	console.log(msg);
         	//window.confirm("successful mocking coordinates");
-        }, function(){},  coordinates);
+        }, function(msg){
+        	console.log(msg);
+        },  coordinates);
     },
+    
     // Bind Event Listeners
     //
     // Bind any events that are required on startup. Common events are:
@@ -140,28 +151,16 @@ var app = {
         // Init UI buttons
         this.btnHome        = $('button#btn-home');
         this.btnReset       = $('button#btn-reset');
-        this.btnPace        = $('button#btn-pace');
+        //this.btnPace        = $('button#btn-pace');
         this.btnEnabled     = $('button#btn-enabled');
-        this.btnMock 		= $('button#btn-mock-location');
-
-        if (ENV.settings.aggressive == 'true') {
-            this.btnPace.addClass('btn-danger');
-        } else {
-            this.btnPace.addClass('btn-success');
-        }
-        if (ENV.settings.enabled == 'true') {
-            this.btnEnabled.addClass('btn-danger');
-            this.btnEnabled[0].innerHTML = 'Stop';
-        } else {
-            this.btnEnabled.addClass('btn-success');
-            this.btnEnabled[0].innerHTML = 'Start';
-        }
+        //this.btnMock 		= $('button#btn-mock');
+        
         
         this.btnHome.on('click', this.onClickHome);
         this.btnReset.on('click', this.onClickReset);
-        this.btnPace.on('click', this.onClickChangePace);
-        this.btnEnabled.on('click', this.onClickToggleEnabled);
-        this.btnMock.on('click', this.onClickMockLocation);
+        //this.btnPace.on('click', this.onClickChangePace);
+        this.btnEnabled.on('click', this.onClickEnabled);
+        //this.btnMock.on('click', this.onClickMock);
     },
     // deviceready Event Handler
     //
@@ -169,100 +168,45 @@ var app = {
     // function, we must explicitly call 'app.receivedEvent(...);'
     onDeviceReady: function() {
         app.receivedEvent('deviceready');
-        app.requestTripPlan('http://xixixhalu-test.apigee.net/proxy/tripPlanner/getPlaces?trip_plan_uuid=8b225b5a-4512-11e4-aa99-799cbc344b62', function(jsonArray){
-        app.configureBackgroundGeoLocation(jsonArray);
-        app.watchPosition();});
-        
+        app.setupGeofences();
     },
     
-    onClickMockLocation: function(){
-    	app.isMocking = app.isMocking? false : true;
-    	
+    setupGeofences: function() {
+    	 app.requestTripPlan('http://xixixhalu-test.apigee.net/proxy/tripPlanner/getPlaces?trip_plan_uuid=8b225b5a-4512-11e4-aa99-799cbc344b62', function(jsonArray){
+    		 	var bgGeo = window.plugins.backgroundGeofencing;
+    	        bgGeo.configure(function(msg){
+    	        	app.setGeofences(jsonArray);
+        	        app.onClickHome();
+    	        	console.log(msg);}, 
+    	        	function(msg){console.log(msg);}, jsonArray);
+    	        
+    	});
+        
     },
-    
-    
-    configureBackgroundGeoLocation: function(jsonArray) {
-        var fgGeo = window.navigator.geolocation,
-            bgGeo = window.plugins.backgroundGeoLocation;
-        
-        app.setGeofences(jsonArray);
-        
-        app.onClickHome();
+    setMapFocus: function(location){
+    	var map     = app.map,
+        coords  = location.coords,
+        ll      = new google.maps.LatLng(coords.latitude, coords.longitude),
+        zoom    = map.getZoom();
 
-        /**
-        * This would be your own callback for Ajax-requests after POSTing background geolocation to your server.
-        */
-        var yourAjaxCallback = function(response) {
-            bgGeo.finish();
-        };
-
-        /**
-        * This callback will be executed every time a geolocation is recorded in the background.
-        */
-        var callbackFn = function(location) {
-            console.log('[js] BackgroundGeoLocation callback:  ' + location.latitude + ',' + location.longitude);
-            
-            // Update our current-position marker.
-            app.setCurrentLocation(location);
-
-            // After you Ajax callback is complete, you MUST signal to the native code, which is running a background-thread, that you're done and it can gracefully kill that thread.
-            yourAjaxCallback.call(this);
-        };
-
-        var failureFn = function(error) {
-            console.log('BackgroundGeoLocation error');
-        };
-
-        // Only ios emits this stationary event
-        bgGeo.onStationary(function(location) {
-            if (!app.stationaryRadius) {
-                app.stationaryRadius = new google.maps.Circle({
-                    fillColor: '#cc0000',
-                    fillOpacity: 0.4,
-                    strokeOpacity: 0,
-                    map: app.map
-                });
-            }
-            var radius = (location.accuracy < location.radius) ? location.radius : location.accuracy;
-            var center = new google.maps.LatLng(location.latitude, location.longitude);
-            app.stationaryRadius.setRadius(radius);
-            app.stationaryRadius.setCenter(center);
-
-        });
-
-        // BackgroundGeoLocation is highly configurable.
-//        bgGeo.configure(callbackFn, failureFn, {
-//            url: 'http://only.for.android.com/update_location.json', // <-- Android ONLY:  your server url to send locations to
-//            params: {
-//                auth_token: 'user_secret_auth_token',    //  <-- Android ONLY:  HTTP POST params sent to your server when persisting locations.
-//                foo: 'bar'                              //  <-- Android ONLY:  HTTP POST params sent to your server when persisting locations.
-//            },
-//            desiredAccuracy: 0,
-//            stationaryRadius: 50,
-//            distanceFilter: 50,
-//            notificationTitle: 'Background tracking', // <-- android only, customize the title of the notification
-//            notificationText: 'ENABLED', // <-- android only, customize the text of the notification
-//            activityType: 'AutomotiveNavigation',
-//            debug: true, // <-- enable this hear sounds for background-geolocation life-cycle.
-//            stopOnTerminate: false // <-- enable this to clear background location settings when the app terminates
-//        });
-        
-        bgGeo.configure(callbackFn, failureFn, jsonArray);
-        
-        // Turn ON the background-geolocation system.  The user will be tracked whenever they suspend the app.
-        var settings = ENV.settings;
-
-        if (settings.enabled == 'true') {
-            bgGeo.start();
-        
-            if (settings.aggressive == 'true') {
-                bgGeo.changePace(true);
-            }
-        }
+    	map.setCenter(ll);
+    	if (zoom < 8) {
+        map.setZoom(8);
+    	}
     },
     onClickHome: function() {
+    	if(app.geofences != null && app.geofences.length > 0){
+    		var geofences = app.geofences;
+    		
+    		var bounds = new google.maps.LatLngBounds();
+    		for(var i in geofences){
+        		bounds.extend(geofences[i].getCenter());
+        		//end loop
+    		}
+    		app.map.fitBounds(bounds);
+    	}
+    	else{
         var fgGeo = window.navigator.geolocation;
-
         // Your app must execute AT LEAST ONE call for the current position via standard Cordova geolocation,
         //  in order to prompt the user for Location permission.
         fgGeo.getCurrentPosition(function(location) {
@@ -275,92 +219,112 @@ var app = {
             if (zoom < 15) {
                 map.setZoom(15);
             }
-            app.setCurrentLocation(coords);
         });
-    },
-    onClickChangePace: function(value) {
-        var bgGeo   = window.plugins.backgroundGeoLocation,
-            btnPace = app.btnPace;
-
-        btnPace.removeClass('btn-success');
-        btnPace.removeClass('btn-danger');
-
-        var isAggressive = ENV.toggle('aggressive');
-        if (isAggressive == 'true') {
-            btnPace.addClass('btn-danger');
-            bgGeo.changePace(true);
-        } else {
-            btnPace.addClass('btn-success');
-            bgGeo.changePace(false);
-        }
+    	}
     },
     onClickReset: function() {
-        // Clear prev location markers.
-        var locations = app.locations;
-        for (var n=0,len=locations.length;n<len;n++) {
-            locations[n].setMap(null);
-        }
-        app.locations = [];
+      // Clear prev location markers.
+      var locations = app.locations;
+      for (var n=0,len=locations.length;n<len;n++) {
+          locations[n].setMap(null);
+      }
+      app.locations = [];
+      
+      var geofences = app.geofences;
+      for (var n=0,len=geofences.length;n<len;n++) {
+          geofences[n].setMap(null);
+      }
+      app.goefences = [];
 
-        // Clear Polyline.
-        app.path.setMap(null);
-        app.path = undefined;
+      // Clear Polyline.
+      if(app.path){
+      app.path.setMap(null);
+      app.path = undefined;
+      }
+      
+      if(app.location){
+          app.location.setMap(null);
+          app.location = undefined;
+          }
+      
+//      if(app.btnMock.hasClass("btn-danger")){
+//    	 app.onClickMock();
+//      }
+      
+      if(app.btnEnabled.hasClass("btn-danger")){
+    	 app.onClickEnabled();
+      }
+      
+      app.setupGeofences();
+      
     },
-    onClickToggleEnabled: function(value) {
-        var bgGeo       = window.plugins.backgroundGeoLocation,
+    
+    onClickMock: function(value){
+    var bgGeo  = window.plugins.backgroundGeofencing,
+    btnMock  = app.btnMock,
+    isEnabled   = btnMock.hasClass("btn-danger");
+     
+     if (isEnabled) {
+         bgGeo.stopMock(function(msg){
+        	 btnMock.removeClass('btn-danger');
+             btnMock.addClass('btn-success');
+             app.isMocking = false;
+             console.log(msg);
+         }, function(msg){
+        	 console.log(msg);
+         });
+     } else {
+    	 
+         bgGeo.startMock(function(msg){
+        	 btnMock.removeClass('btn-success');
+             btnMock.addClass('btn-danger');
+             app.isMocking = true;
+             console.log(msg);
+         }, function(msg){
+        	  console.log(msg);
+         });
+     }
+    },
+    
+    onClickEnabled: function(value) {
+        var bgGeo       = window.plugins.backgroundGeofencing,
             btnEnabled  = app.btnEnabled,
-            isEnabled   = ENV.toggle('enabled');
+            isEnabled   = btnEnabled.hasClass("btn-danger");
         
-        btnEnabled.removeClass('btn-danger');
-        btnEnabled.removeClass('btn-success');
-
-        if (isEnabled == 'true') {
-            btnEnabled.addClass('btn-danger');
-            btnEnabled[0].innerHTML = 'Stop';
-            bgGeo.start();
+        if (isEnabled) {
+             
+             bgGeo.stop(function(msg){
+            	 btnEnabled.removeClass('btn-danger');
+            	 btnEnabled.addClass('btn-success');
+                 btnEnabled[0].innerHTML = 'Start';
+                 console.log(msg);
+             }, function(msg){
+            	 console.log(msg);
+             });
         } else {
-            btnEnabled.addClass('btn-success');
-            btnEnabled[0].innerHTML = 'Start';
-            bgGeo.stop();
-        }
-    },
-    watchPosition: function() {
-        var fgGeo = window.navigator.geolocation;
-        if (app.watchId) {
-            app.stopPositionWatch();
-        }
-        // Watch foreground location
-        app.watchId = fgGeo.watchPosition(function(location) {
-            app.setCurrentLocation(location.coords);
-        }, function() {}, {
-            enableHighAccuracy: true,
-            maximumAge: 5000,
-            frequency: 10000,
-            timeout: 10000
-        });
-    },
-    stopPositionWatch: function() {
-        var fgGeo = window.navigator.geolocation;
-        if (app.watchId) {
-            fgGeo.clearWatch(app.watchId);
-            app.watchId = undefined;
+            bgGeo.start(function(msg){
+                btnEnabled.removeClass('btn-success');
+                btnEnabled.addClass('btn-danger');
+                btnEnabled[0].innerHTML = 'Stop';
+                console.log(msg);
+            }, function(msg){
+            	console.log(msg);
+            });
         }
     },
     /**
     * Cordova foreground geolocation watch has no stop/start detection or scaled distance-filtering to conserve HTTP requests based upon speed.  
-    * You can't leave Cordova's GeoLocation running in background or it'll kill your battery.  This is the purpose of BackgroundGeoLocation:  to intelligently 
+    * You can't leave Cordova's Geofencing running in background or it'll kill your battery.  This is the purpose of BackgroundGeofencing:  to intelligently 
     * determine start/stop of device.
     */
     onPause: function() {
         console.log('- onPause');
-        app.stopPositionWatch();
     },
     /**
-    * Once in foreground, re-engage foreground geolocation watch with standard Cordova GeoLocation api
+    * Once in foreground, re-engage foreground geolocation watch with standard Cordova Geofencing api
     */
     onResume: function() {
         console.log('- onResume');
-        app.watchPosition();
     },
     // Update DOM on a Received Event
     receivedEvent: function(id) {
@@ -381,11 +345,12 @@ var app = {
     			      center: new google.maps.LatLng(geofence.latitude, geofence.longitude),
     			      radius: parseInt(geofence.radius)
     			    };
-    			    // Add the circle for this city to the map.
+    		// Add the circle for this city to the map.
     		var circleObject = new google.maps.Circle(circleOptions);
     		google.maps.event.addListener(circleObject, 'click', function(event) {
             	app.onMapClick(app.map, event);
             });
+    		app.geofences.push(circleObject);
     	}
     	
     },

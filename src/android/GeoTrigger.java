@@ -52,9 +52,7 @@ public class Geotrigger {
 			}
 	
 	public void start(){
-		this.context.registerReceiver(stationaryRegionReceiver, new IntentFilter(STATIONARY_REGION_ACTION));
-
-		this.locationManager = (LocationManager) this.context.getSystemService(Context.LOCATION_SERVICE);
+	    this.locationManager = (LocationManager) this.context.getSystemService(Context.LOCATION_SERVICE);
 		
 		if(this.tripplan != null){
 		// Here be the execution of the stationary region monitor
@@ -74,13 +72,19 @@ public class Geotrigger {
 	                (long)-1,
 	                stationaryRegionPI
 	        );
+			
+			place.setPendingIntnet(stationaryRegionPI);
 		}
+		
+		this.context.registerReceiver(stationaryRegionReceiver, new IntentFilter(STATIONARY_REGION_ACTION));
+
+		
 	}
 		this.isEnabled = true;
 	}
 	
 	public void stop(){
-		if(this.locationManager != null && this.locationManager != null){
+		if(this.locationManager != null){
 			List<Place> places = this.tripplan.getPlaces();
 			for(Place place : places){
 				PendingIntent pendingIntent = place.getPendingIntent();

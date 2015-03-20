@@ -81,9 +81,10 @@ public class BackgroundGeofencingPlugin extends CordovaPlugin {
             
             Notification.Builder builder = new Notification.Builder(activity);
             builder.setContentTitle("welcome to"+place.getPlaceName());
-            builder.setContentText("you get a coupon from" + place.getPlaceName());
+            builder.setContentText("enter:" + place.getPlaceName());
             builder.setSmallIcon(android.R.drawable.ic_menu_mylocation);
             builder.setContentIntent(pendingIntent);
+            builder.setAutoCancel(true);
             Notification notification;
             if (android.os.Build.VERSION.SDK_INT >= 16) {
                 notification = buildForegroundNotification(builder);
@@ -108,10 +109,11 @@ public class BackgroundGeofencingPlugin extends CordovaPlugin {
 
             
             Notification.Builder builder = new Notification.Builder(activity);
-            builder.setContentTitle("happy day"+place.getPlaceName());
-            builder.setContentText("you got a coupon from" + place.getPlaceName());
+            builder.setContentTitle("welfare:"+place.getPlaceName());
+            builder.setContentText("exit:" + place.getPlaceName());
             builder.setSmallIcon(android.R.drawable.ic_menu_mylocation);
             builder.setContentIntent(pendingIntent);
+            builder.setAutoCancel(true);
             Notification notification;
             if (android.os.Build.VERSION.SDK_INT >= 16) {
                 notification = buildForegroundNotification(builder);
@@ -139,14 +141,15 @@ public class BackgroundGeofencingPlugin extends CordovaPlugin {
         	else if (tripPlan == null) {
                 callbackContext.error("Call configure before calling start");
             } else {
-            	result = true;
+            	
                 if(this.geoTrigger == null){
                 	this.geoTrigger = new Geotrigger(this.cordova.getActivity(), tripPlan);
                 	this.geoTrigger.setGeotriggerListener(geotriggerListener);
                 }
                 this.geoTrigger.start();
                 this.isStarted = true;
-                callbackContext.success();
+                result = true;
+                callbackContext.success("start succeed");
             }
         } else if (ACTION_STOP.equalsIgnoreCase(action)) {
         	if(!isStarted){
@@ -158,7 +161,7 @@ public class BackgroundGeofencingPlugin extends CordovaPlugin {
             	this.geoTrigger.stop();
             }
             result = true;
-            callbackContext.success();
+            callbackContext.success("stop succeed");
         } else if (ACTION_CONFIGURE.equalsIgnoreCase(action)){
         	if(isStarted){
             	callbackContext.error("The service has started yet");
@@ -179,6 +182,7 @@ public class BackgroundGeofencingPlugin extends CordovaPlugin {
             this.geoTrigger = new Geotrigger(this.cordova.getActivity(), tripPlan);
             this.geoTrigger.setGeotriggerListener(geotriggerListener);
             result = true;
+            callbackContext.success("configure succeed");
             }
             
             }
@@ -204,7 +208,7 @@ public class BackgroundGeofencingPlugin extends CordovaPlugin {
             this.geoTrigger.reset(tripPlan);
             }
             result = true;
-            
+            callbackContext.success("reconfigure succeed");
             }
             
         } 
@@ -240,6 +244,7 @@ public class BackgroundGeofencingPlugin extends CordovaPlugin {
         		            this.geoTrigger.reset(tripPlan);
         		            }
         		            result = true;
+        		            callbackContext.success("adding place succeed");
         			 }
         		 }
         	}
@@ -275,6 +280,7 @@ public class BackgroundGeofencingPlugin extends CordovaPlugin {
          		            this.geoTrigger.reset(tripPlan);
          		            }
          		            result = true;
+         		           callbackContext.success("deleting place succeed");
         			
         			 }
         		 }
@@ -310,6 +316,7 @@ public class BackgroundGeofencingPlugin extends CordovaPlugin {
      		            this.geoTrigger.reset(tripPlan);
      		            }
      		            result = true;
+     		           callbackContext.success("enable place succeed");
         			 }
         		 }
         	}
@@ -364,12 +371,18 @@ public class BackgroundGeofencingPlugin extends CordovaPlugin {
         	if(this.geoFaker != null && this.geoFaker.isStarted()){
         		callbackContext.error("geofaker has started");
         	}
+        	else{
         	this.geoFaker = new Geofaker(this.cordova.getActivity());
         	this.geoFaker.start();
+        	result = true;
+        	callbackContext.success("mocking started");
+        	}
         }
         else if(ACTION_MOCK_STOP.equalsIgnoreCase(action)){
         	if(this.geoFaker != null && this.geoFaker.isStarted()){
         		this.geoFaker.stop();
+        		result = true;
+        		callbackContext.success("mocking stopped");
         	}
         	else{
         		callbackContext.error("geofaker has already stopped");
@@ -381,7 +394,7 @@ public class BackgroundGeofencingPlugin extends CordovaPlugin {
         	intent.putExtra(Geofaker.MOCKED_JSON_COORDINATES, data.toString());
         	activity.sendBroadcast(intent);
         	result = true;
-        	callbackContext.success();
+        	callbackContext.success("mocked position: "+data.toString());
         }
 
         return result;
