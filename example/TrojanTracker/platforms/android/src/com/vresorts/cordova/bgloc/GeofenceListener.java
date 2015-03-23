@@ -1,8 +1,8 @@
 package com.vresorts.cordova.bgloc;
 
-import com.vresorts.backgroundGeofencing.CordovaApp;
 import com.vresorts.cordova.bgloc.beans.Place;
 import com.vresorts.cordova.bgloc.parser.PlaceParser;
+import com.vresorts.geotrigger.CordovaApp;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;

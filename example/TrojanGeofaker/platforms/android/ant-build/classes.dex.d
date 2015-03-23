@@ -27,5 +27,11 @@
 /Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TrojanGeofaker/platforms/android/ant-build/classes/com/vresorts/cordova/bgloc/parser/PlaceParser.class \
 /Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TrojanGeofaker/platforms/android/ant-build/classes/com/vresorts/cordova/bgloc/parser/PlaceUuidParser.class \
 /Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TrojanGeofaker/platforms/android/ant-build/classes/com/vresorts/cordova/bgloc/parser/TripPlanParser.class \
+/Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TrojanGeofaker/platforms/android/ant-build/classes/com/vresorts/geofaker/BuildConfig.class \
 /Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TrojanGeofaker/platforms/android/ant-build/classes/com/vresorts/geofaker/CordovaApp.class \
+/Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TrojanGeofaker/platforms/android/ant-build/classes/com/vresorts/geofaker/R$attr.class \
+/Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TrojanGeofaker/platforms/android/ant-build/classes/com/vresorts/geofaker/R$drawable.class \
+/Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TrojanGeofaker/platforms/android/ant-build/classes/com/vresorts/geofaker/R$string.class \
+/Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TrojanGeofaker/platforms/android/ant-build/classes/com/vresorts/geofaker/R$xml.class \
+/Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TrojanGeofaker/platforms/android/ant-build/classes/com/vresorts/geofaker/R.class \
 /Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TrojanGeofaker/platforms/android/ant-build/dexedLibs/classes-f842cf89c10a3d757df470e0225cca84.jar \
