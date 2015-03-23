@@ -125,16 +125,6 @@ public class Place{
 		return object;
 	}
 	
-	PendingIntent pendingIntent;
-	
-	public PendingIntent getPendingIntent(){
-		return pendingIntent;
-	}
-	
-	public void setPendingIntnet(PendingIntent pendingIntent){
-		this.pendingIntent = pendingIntent;
-	}
-	
 	long timeStamp;
 	
 	public void setTimeStamp(long timeStamp){

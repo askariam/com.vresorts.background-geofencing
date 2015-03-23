@@ -3,6 +3,7 @@ package com.vresorts.cordova.bgloc.parser;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.vresorts.cordova.bgloc.beans.Geofence;
 import com.vresorts.cordova.bgloc.beans.Place;
 
 public class PlaceParser extends JasonParser{
@@ -34,6 +35,22 @@ public class PlaceParser extends JasonParser{
 			place.setTripPlanUuid(placeEntity
 					.getStringProperty("trip_plan_uuid"));
 			place.setUserUuid(placeEntity.getStringProperty("user_uuid"));
+
+
+			Entity geoEntity = placeEntity.getChild("geofence");
+
+			if (geoEntity != null) {
+				Geofence geofence = new Geofence();
+				geofence.setLatitude(geoEntity.getFloatProperty("latitude"));
+				geofence.setLongitude(geoEntity
+						.getFloatProperty("longitude"));
+				geofence.setRadius(geoEntity.getFloatProperty("radius"));
+				geofence.setUuid(geoEntity.getStringProperty("uuid"));
+				geofence.setOfferUuid(geoEntity
+						.getStringProperty("offer_uuid"));
+				place.setGeofence(geofence);
+
+			}
 
 			break;
 		}

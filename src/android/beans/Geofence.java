@@ -1,6 +1,11 @@
 package com.vresorts.cordova.bgloc.beans;
 
-public class Geofence {
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+
+public class Geofence{
 	private float latitude;
 	private float longitude;
 	private float radius;
@@ -16,7 +21,6 @@ public class Geofence {
 		if(geofence == null){
 			return;
 		}
-		
 		this.latitude = geofence.latitude;
 		this.longitude = geofence.longitude;
 		this.radius = geofence.radius;
@@ -60,5 +64,20 @@ public class Geofence {
 	public void setRadius(float radius) {
 		this.radius = radius;
 	}
+	
+	public JSONObject toJSONObject(){
+		JSONObject object = new JSONObject();
+		try {
+			object.put("latitude", this.latitude);
+			object.put("longitude", this.longitude);
+			object.put("radius", this.radius);
+			object.put("uuid", this.uuid);
+			object.put("offer_uuid", this.offerUuid);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return object;
+	}
+	
 	
 }

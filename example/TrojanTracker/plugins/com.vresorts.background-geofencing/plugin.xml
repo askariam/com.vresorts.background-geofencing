@@ -27,7 +27,7 @@
         
         <source-file src="src/android/Geotrigger.java" target-dir="src/com/vresorts/cordova/bgloc" />
         
-        <source-file src="src/android/GeofencingService.java" target-dir="src/com/vresorts/cordova/bgloc" />
+        <source-file src="src/android/GeofenceListener.java" target-dir="src/com/vresorts/cordova/bgloc" />
         
         <source-file src="src/android/beans/Geofence.java" target-dir="src/com/vresorts/cordova/bgloc/beans" />
         
@@ -48,7 +48,18 @@
         <source-file src="src/android/notification.png" target-dir="res/drawable" />
         
          <config-file target="AndroidManifest.xml" parent="/manifest/application">
-            <service android:name="com.vresorts.cordova.bgloc.GeofencingService" android:enabled="true" android:process=":remote" />
+             <receiver
+            android:name="com.vresorts.cordova.bgloc.GeofenceListener"
+            android:enabled="true" >
+            <intent-filter>
+                <action android:name="com.vresorts.cordova.bgloc.STATIONARY_REGION_ACTION_TRIGGERED" />
+                <category android:name="com.vresorts.cordova.bgloc.STATIONARY_REGION" />
+
+                <data
+                    android:host="bgloc.cordova.vresorts.com"
+                    android:scheme="geotrigger" />
+            </intent-filter>
+        </receiver>
         </config-file>
 
         <config-file target="AndroidManifest.xml" parent="/manifest">

@@ -1,45 +1,21 @@
 package com.vresorts.cordova.bgloc.beans;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.app.PendingIntent;
 import android.location.Location;
-public class Place {
-	String uuid;
-	String placeName;
-	String address;
-	String userUuid;
-	String infoUrl;
-	String tripPlanUuid;
-	boolean isSubscribed;
-	String shortDesc;
-	String offerUuid;
-	Geofence geofence;
-	
-	PendingIntent pendingIntent;
-	
-	// added attribute for geotriggering
-	boolean wasLocatedIn = false;
-	
-	public PendingIntent getPendingIntent(){
-		return pendingIntent;
-	}
-	
-	public void setPendingIntnet(PendingIntent pendingIntent){
-		this.pendingIntent = pendingIntent;
-	}
-	
-	long timeStampOnEnter;
-	
-	public long getTimeStampOnEnter() {
-		return timeStampOnEnter;
-	}
-//
-//	public void setTimeStampOnEnter(long timeStampOnEnter) {
-//		this.timeStampOnEnter = timeStampOnEnter;
-//	}
-
-	public boolean wasLocatedIn(){
-		return this.wasLocatedIn;
-	}
+public class Place{
+	protected String uuid;
+	protected String placeName;
+	protected String address;
+	protected String userUuid;
+	protected String infoUrl;
+	protected String tripPlanUuid;
+	protected boolean isSubscribed;
+	protected String shortDesc;
+	protected String offerUuid;
+	protected Geofence geofence;
 	
 	public boolean isLocatedIn(Location location) {
 		double distance = this.calculateDistanceFromLatLonInKm(location.getLatitude(), location.getLongitude(), geofence.getLatitude(), geofence.getLongitude());
@@ -67,12 +43,6 @@ public class Place {
 		  return deg * (Math.PI/180);
 		}
 		
-	public void setLocatedIn(boolean isCurrentLocatedIn) {
-		if(isCurrentLocatedIn){
-			this.timeStampOnEnter = System.currentTimeMillis();
-		}
-		this.wasLocatedIn = isCurrentLocatedIn;
-	}
 	public String getUuid() {
 		return uuid;
 	}
@@ -128,12 +98,6 @@ public class Place {
 		this.geofence = geofence;
 		this.geofence.setGlobalUuid(this.geofence.getUuid()+"-"+this.userUuid);
 	}
-//	
-//	public Geofence invalidateGeofence(){
-//		Geofence oldGeofence = this.geofence;
-//		this.setGeofence(new Geofence(oldGeofence));
-//		return oldGeofence;
-//	}
 	
 	public String getOfferUuid() {
 		return offerUuid;
@@ -142,5 +106,37 @@ public class Place {
 		this.offerUuid = offerUuid;
 	}
 	
+	public JSONObject toJSONObject(){
+		JSONObject object = new JSONObject();
+		try {
+			object.put("uuid", this.uuid);
+			object.put("address", this.address);
+			object.put("place_name", this.placeName);
+			object.put("infor_url", this.infoUrl);
+			object.put("offer_uuid", this.offerUuid);
+			object.put("is_subscribed", this.isSubscribed());
+			object.put("short_desc", this.shortDesc);
+			object.put("trip_plan_uuid", this.tripPlanUuid);
+			object.put("user_uuid", this.userUuid);
+			object.put("geofence", this.geofence.toJSONObject());
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return object;
+	}
 	
+	long timeStamp;
+	
+	public void setTimeStamp(long timeStamp){
+		this.timeStamp = timeStamp;
+	}
+	
+	public void timeStamp(){
+		this.timeStamp = System.currentTimeMillis();
+	}
+	
+	public long getTimeStamp() {
+		return timeStamp;
+	}
+
 }

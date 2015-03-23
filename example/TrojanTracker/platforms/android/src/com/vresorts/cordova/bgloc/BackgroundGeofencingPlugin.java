@@ -29,9 +29,6 @@ import com.vresorts.cordova.bgloc.parser.TripPlanParser;
 
 @SuppressLint("NewApi")
 public class BackgroundGeofencingPlugin extends CordovaPlugin {
-	
-	
-    private static final String TAG = "BackgroundFencingPlugin";
 
     public static final String ACTION_START = "start";
     public static final String ACTION_STOP = "stop";
@@ -48,53 +45,58 @@ public class BackgroundGeofencingPlugin extends CordovaPlugin {
     public static final String ACTION_MOCK_START = "startMock";
     public static final String ACTION_MOCK_STOP = "stopMock";
     
-    private boolean isStarted = false;
-    
-    private TripPlan tripPlan;
-    
     private Geofaker geoFaker;
     
-    private Geotrigger geoTrigger;
+    private Geotrigger geotrigger;
     
+    Activity activity;
     
-    public boolean execute(String action, JSONArray data, final CallbackContext callbackContext) {
+    @Override
+	protected void pluginInitialize() {
+		super.pluginInitialize();
+		this.activity = this.cordova.getActivity();
+		geotrigger = new Geotrigger(activity);
+	}
+    
+	@Override
+	public void onPause(boolean multitasking) {
+		super.onPause(multitasking);
+		this.geotrigger.onPause();
+	}
+	
+	
+
+	public boolean execute(String action, JSONArray data, final CallbackContext callbackContext) {
         
-    	Activity activity = this.cordova.getActivity();
         Boolean result = false;
 
         if (ACTION_START.equalsIgnoreCase(action)) {
-        	if(isStarted){
+        	if(geotrigger.isEnabled()){
                 callbackContext.error("Service has already been started");
         	}
-        	else if (tripPlan == null) {
+        	else if (!geotrigger.isConfigured()) {
                 callbackContext.error("Call configure before calling start");
             } else {
-            	
-                if(this.geoTrigger == null){
-                	this.geoTrigger = new Geotrigger(this.cordova.getActivity(), tripPlan);
-//                	this.geoTrigger.setGeotriggerListener(geotriggerListener);
-                }
-                this.geoTrigger.start();
-                this.isStarted = true;
+            
+                this.geotrigger.start();
                 result = true;
                 callbackContext.success("start succeed");
             }
         } else if (ACTION_STOP.equalsIgnoreCase(action)) {
-        	if(!isStarted){
+        	if(!geotrigger.isEnabled()){
             	callbackContext.error("The service hasn't started yet");
         	}
-        	
-            isStarted = false;
-            if(this.geoTrigger != null){
-            	this.geoTrigger.stop();
-            }
+        	else{
+            this.geotrigger.stop();
             result = true;
             callbackContext.success("stop succeed");
+        	}
         } else if (ACTION_CONFIGURE.equalsIgnoreCase(action)){
-        	if(isStarted){
-            	callbackContext.error("The service has started yet");
+        	if(geotrigger.isEnabled()){
+            	Log.v(Config.TAG, "has enabled, then disable all the previous geofences");
+            	geotrigger.stop();
             }
-            else{
+           
             TripPlan tripPlanToConfigure = null;
             try {
         		TripPlanParser parser = new TripPlanParser(data.toString());
@@ -106,148 +108,145 @@ public class BackgroundGeofencingPlugin extends CordovaPlugin {
 			}
             
             if(tripPlanToConfigure != null){
-            tripPlan = tripPlanToConfigure;
-            this.geoTrigger = new Geotrigger(this.cordova.getActivity(), tripPlan);
+            this.geotrigger.configure(tripPlanToConfigure);
 //            this.geoTrigger.setGeotriggerListener(geotriggerListener);
             result = true;
             callbackContext.success("configure succeed");
             }
             
-            }
-            
         }
     	else if (ACTION_RECONFIGURE.equalsIgnoreCase(action)) {
-            if(!isStarted){
-            	callbackContext.error("The service is not started yet");
-            }
-            else{
-            TripPlan tripPlanToReconfigure = null;
-            try {
-        		TripPlanParser parser = new TripPlanParser(data.toString());
-        		tripPlanToReconfigure = parser.getTripplan();
-        		
-			} catch (Exception e) {
-				e.printStackTrace();
-				callbackContext.error("Errors occur when parsing tripplan data");
-			}
-            
-            if(tripPlanToReconfigure != null && this.geoTrigger !=null){
-            tripPlan = tripPlanToReconfigure;
-            this.geoTrigger.reset(tripPlan);
-            }
-            result = true;
-            callbackContext.success("reconfigure succeed");
-            }
-            
+//            if(!isStarted){
+//            	callbackContext.error("The service is not started yet");
+//            }
+//            else{
+//            TripPlan tripPlanToReconfigure = null;
+//            try {
+//        		TripPlanParser parser = new TripPlanParser(data.toString());
+//        		tripPlanToReconfigure = parser.getTripplan();
+//        		
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//				callbackContext.error("Errors occur when parsing tripplan data");
+//			}
+//            
+//            if(tripPlanToReconfigure != null && this.geoTrigger !=null){
+//            tripPlan = tripPlanToReconfigure;
+//            this.geoTrigger.reset(tripPlan);
+//            }
+//            result = true;
+//            callbackContext.success("reconfigure succeed");
+//            }
+//            
         } 
         else if( ACTION_ADDPLACE.equalsIgnoreCase(action)){
-        	if(tripPlan == null){
-        		callbackContext.error("The service is not configured yet");
-        	}
-        	else if(!isStarted){
-        		callbackContext.error("The service is not started yet");
-        	}
-        	else{
-        		Place place= null;
-        		 try {
-             		PlaceParser parser = new PlaceParser(data.toString());
-             		place = parser.getPlace();
-     			} catch (Exception e) {
-     				e.printStackTrace();
-     			}
-        		
-        		 if(place == null){
-      				callbackContext.error("Errors occur when parsing tripplan data");
-        		 }
-        		 else{
-        			 String placeUuid = place.getUuid();
-        			 Place existantPlace = tripPlan.getPlaceByUuid(placeUuid);
-        			 if(existantPlace != null){
-        				 callbackContext.error("place is already existing");
-        			 }
-        			 else{
-        			 if(tripPlan != null && this.geoTrigger !=null){
-
-            			 tripPlan.addPlace(place);
-        		            this.geoTrigger.reset(tripPlan);
-        		            }
-        		            result = true;
-        		            callbackContext.success("adding place succeed");
-        			 }
-        		 }
-        	}
+//        	if(tripPlan == null){
+//        		callbackContext.error("The service is not configured yet");
+//        	}
+//        	else if(!isStarted){
+//        		callbackContext.error("The service is not started yet");
+//        	}
+//        	else{
+//        		Place place= null;
+//        		 try {
+//             		PlaceParser parser = new PlaceParser(data.toString());
+//             		place = parser.getPlace();
+//     			} catch (Exception e) {
+//     				e.printStackTrace();
+//     			}
+//        		
+//        		 if(place == null){
+//      				callbackContext.error("Errors occur when parsing tripplan data");
+//        		 }
+//        		 else{
+//        			 String placeUuid = place.getUuid();
+//        			 Place existantPlace = tripPlan.getPlaceByUuid(placeUuid);
+//        			 if(existantPlace != null){
+//        				 callbackContext.error("place is already existing");
+//        			 }
+//        			 else{
+//        			 if(tripPlan != null && this.geoTrigger !=null){
+//
+//            			 tripPlan.addPlace(place);
+//        		            this.geoTrigger.reset(tripPlan);
+//        		            }
+//        		            result = true;
+//        		            callbackContext.success("adding place succeed");
+//        			 }
+//        		 }
+//        	}
         	
         }
         else if(ACTION_DELETEPLACE.equalsIgnoreCase(action)){
-        	if(tripPlan == null){
-        		callbackContext.error("The service is not configured yet");
-        	}
-        	else if(!isStarted){
-        		callbackContext.error("The service is not started yet");
-        	}
-        	else{
-        		String placeUuid= null;
-        		 try {
-             		PlaceUuidParser parser = new PlaceUuidParser(data.toString());
-             		placeUuid = parser.getPlaceUuid();
-     			} catch (Exception e) {
-     				e.printStackTrace();
-     			}
-        		
-        		 if(placeUuid == null){
-      				callbackContext.error("Errors occur when parsing place uuid");
-        		 }
-        		 else{
-        			 Place existantPlace = tripPlan.getPlaceByUuid(placeUuid);
-        			 if(existantPlace == null){
-        				 callbackContext.error("place is not existing");
-        			 }
-        			 else{
-        				 if(tripPlan != null && this.geoTrigger !=null){
-        					tripPlan.removePlace(placeUuid);
-         		            this.geoTrigger.reset(tripPlan);
-         		            }
-         		            result = true;
-         		           callbackContext.success("deleting place succeed");
-        			
-        			 }
-        		 }
-        	}
+//        	if(tripPlan == null){
+//        		callbackContext.error("The service is not configured yet");
+//        	}
+//        	else if(!isStarted){
+//        		callbackContext.error("The service is not started yet");
+//        	}
+//        	else{
+//        		String placeUuid= null;
+//        		 try {
+//             		PlaceUuidParser parser = new PlaceUuidParser(data.toString());
+//             		placeUuid = parser.getPlaceUuid();
+//     			} catch (Exception e) {
+//     				e.printStackTrace();
+//     			}
+//        		
+//        		 if(placeUuid == null){
+//      				callbackContext.error("Errors occur when parsing place uuid");
+//        		 }
+//        		 else{
+//        			 Place existantPlace = tripPlan.getPlaceByUuid(placeUuid);
+//        			 if(existantPlace == null){
+//        				 callbackContext.error("place is not existing");
+//        			 }
+//        			 else{
+//        				 if(tripPlan != null && this.geoTrigger !=null){
+//        					tripPlan.removePlace(placeUuid);
+//         		            this.geoTrigger.reset(tripPlan);
+//         		            }
+//         		            result = true;
+//         		           callbackContext.success("deleting place succeed");
+//        			
+//        			 }
+//        		 }
+//        	}
         }
         else if(ACTION_ENABLEPLACE.equalsIgnoreCase(action) || ACTION_DISABLEPLACE.equalsIgnoreCase(action)){
-        	if(tripPlan == null){
-        		callbackContext.error("The service is not configured yet");
-        	}
-        	else if(!isStarted){
-        		callbackContext.error("The service is not started yet");
-        	}
-        	else{
-        		String placeUuid= null;
-        		 try {
-             		PlaceUuidParser parser = new PlaceUuidParser(data.toString());
-             		placeUuid = parser.getPlaceUuid();
-     			} catch (Exception e) {
-     				e.printStackTrace();
-     			}
-        		
-        		 if(placeUuid == null){
-      				callbackContext.error("Errors occur when parsing place uuid");
-        		 }
-        		 else{
-        			 Place existantPlace = tripPlan.getPlaceByUuid(placeUuid);
-        			 if(existantPlace == null){
-        				 callbackContext.error("place is not existing");
-        			 }
-        			 else{
-        			 if(tripPlan != null && this.geoTrigger !=null){
-            			 existantPlace.setSubscribed(ACTION_ENABLEPLACE.equalsIgnoreCase(action) ? true : false);
-     		            this.geoTrigger.reset(tripPlan);
-     		            }
-     		            result = true;
-     		           callbackContext.success("enable place succeed");
-        			 }
-        		 }
-        	}
+//        	if(tripPlan == null){
+//        		callbackContext.error("The service is not configured yet");
+//        	}
+//        	else if(!isStarted){
+//        		callbackContext.error("The service is not started yet");
+//        	}
+//        	else{
+//        		String placeUuid= null;
+//        		 try {
+//             		PlaceUuidParser parser = new PlaceUuidParser(data.toString());
+//             		placeUuid = parser.getPlaceUuid();
+//     			} catch (Exception e) {
+//     				e.printStackTrace();
+//     			}
+//        		
+//        		 if(placeUuid == null){
+//      				callbackContext.error("Errors occur when parsing place uuid");
+//        		 }
+//        		 else{
+//        			 Place existantPlace = tripPlan.getPlaceByUuid(placeUuid);
+//        			 if(existantPlace == null){
+//        				 callbackContext.error("place is not existing");
+//        			 }
+//        			 else{
+//        			 if(tripPlan != null && this.geoTrigger !=null){
+//            			 existantPlace.setSubscribed(ACTION_ENABLEPLACE.equalsIgnoreCase(action) ? true : false);
+//     		            this.geoTrigger.reset(tripPlan);
+//     		            }
+//     		            result = true;
+//     		           callbackContext.success("enable place succeed");
+//        			 }
+//        		 }
+//        	}
         }
         else if(ACTION_GETCURRENTLOCATION.equalsIgnoreCase(action)){
         	 final LocationManager locationManager = (LocationManager) this.cordova.getActivity().getSystemService(Context.LOCATION_SERVICE);

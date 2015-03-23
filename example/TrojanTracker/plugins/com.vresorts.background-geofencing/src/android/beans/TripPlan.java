@@ -4,6 +4,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+
 public class TripPlan {
 	private String uuid;
 	private String tripPlanName;
@@ -55,6 +60,24 @@ public class TripPlan {
 			}
 		}
 		
+	}
+	
+	public JSONObject toJSONObject(){
+		JSONObject object = new JSONObject();
+		try {
+			object.put("uuid", this.uuid);
+			object.put("trip_plan_name", this.tripPlanName);
+			object.put("user_uuid", this.userUuid);
+			
+			JSONArray placeJSONArray = new JSONArray();
+			for(Place place : this.places){
+				placeJSONArray.put(place.toJSONObject());
+			}
+			object.put("places", placeJSONArray);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return object;
 	}
 	
 }
