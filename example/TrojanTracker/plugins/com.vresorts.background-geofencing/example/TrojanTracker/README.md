@@ -1,0 +1,3 @@
+Example Background GeoFencing app.
+=============================================
+
