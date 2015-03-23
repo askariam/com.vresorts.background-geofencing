@@ -172,7 +172,7 @@ var app = {
     },
     
     setupGeofences: function() {
-    	 app.requestTripPlan('http://xixixhalu-test.apigee.net/proxy/tripPlanner/getPlaces?trip_plan_uuid=8b225b5a-4512-11e4-aa99-799cbc344b62', function(jsonArray){
+    	 app.requestTripPlan('http://xixixhalu-test.apigee.net/proxy/tripPlanner/getPlaces?trip_plan_uuid=a137a68a-be1f-11e4-a532-9192b501077c', function(jsonArray){
     		 	var bgGeo = window.plugins.backgroundGeofencing;
     	        bgGeo.configure(function(msg){
     	        	app.setGeofences(jsonArray);
