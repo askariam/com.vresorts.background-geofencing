@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    id="com.vresorts.background-geofencing"
+    version="0.3.6">
+    <name>CDVBackgroundGeoFencing</name>
+    <description>Cordova Background Geofencing Plugin</description>
+    <license>MIT</license>
+    <keywords>phonegap,background Geofencing</keywords>
+
+    <engines>
+        <engine name="cordova" version=">=3.0.0" />
+    </engines>
+
+    <js-module src="www/BackgroundGeofencing.js" name="BackgroundGeofencing">
+        <clobbers target="plugins.backgroundGeofencing" />
+    </js-module>
+
+    <!-- android -->
+    <platform name="android">
+        <source-file src="src/android/BackgroundGeofencingPlugin.java" target-dir="src/com/vresorts/cordova/bgloc" />
+        
+        <source-file src="src/android/Config.java" target-dir="src/com/vresorts/cordova/bgloc" />
+        
+        <source-file src="src/android/Geofaker.java" target-dir="src/com/vresorts/cordova/bgloc" />
+        
+        <source-file src="src/android/Geotrigger.java" target-dir="src/com/vresorts/cordova/bgloc" />
+        
+        <source-file src="src/android/GeofencingService.java" target-dir="src/com/vresorts/cordova/bgloc" />
+        
+        <source-file src="src/android/beans/Geofence.java" target-dir="src/com/vresorts/cordova/bgloc/beans" />
+        
+        <source-file src="src/android/beans/Place.java" target-dir="src/com/vresorts/cordova/bgloc/beans" />
+        
+        <source-file src="src/android/beans/TripPlan.java" target-dir="src/com/vresorts/cordova/bgloc/beans" />
+        
+        <source-file src="src/android/parser/PlaceUuidParser.java" target-dir="src/com/vresorts/cordova/bgloc/parser" />
+        
+        <source-file src="src/android/parser/Entity.java" target-dir="src/com/vresorts/cordova/bgloc/parser" />
+        
+        <source-file src="src/android/parser/PlaceParser.java" target-dir="src/com/vresorts/cordova/bgloc/parser" />
+        
+        <source-file src="src/android/parser/JasonParser.java" target-dir="src/com/vresorts/cordova/bgloc/parser" />
+        
+        <source-file src="src/android/parser/TripPlanParser.java" target-dir="src/com/vresorts/cordova/bgloc/parser" />
+        
+        <source-file src="src/android/notification.png" target-dir="res/drawable" />
+        
+         <config-file target="AndroidManifest.xml" parent="/manifest/application">
+            <service android:name="com.vresorts.cordova.bgloc.GeofencingService" android:enabled="true" android:process=":remote" />
+        </config-file>
+
+        <config-file target="AndroidManifest.xml" parent="/manifest">
+            <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+            <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+            <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+            <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" />
+            <uses-permission android:name="android.permission.INTERNET" />
+            <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION" />
+        </config-file>   
+        <config-file target="res/xml/config.xml" parent="/*">
+            <feature name="BackgroundGeofencing">
+                <param name="android-package" value="com.vresorts.cordova.bgloc.BackgroundGeofencingPlugin"/>
+            </feature>
+        </config-file> 
+        
+     </platform>          
+
+     
+<platform name="ios">
+        <!-- required background modes:  App registers for location updates -->
+        
+        <config-file target="*-Info.plist" parent="NSLocationAlwaysUsageDescription">
+            <string>This app requires background location tracking</string>
+        </config-file>
+
+        <config-file target="*-Info.plist" parent="UIBackgroundModes">
+            <array>
+                <string>location</string>
+            </array>
+        </config-file>
+
+        <config-file target="config.xml" parent="/*">
+            <feature name="BackgroundGeoLocation">
+                <param name="ios-package" value="CDVBackgroundGeoLocation"/>
+            </feature>
+        </config-file>
+        <framework src="AudioToolbox.framework" weak="true" />
+        <framework src="AVFoundation.framework" weak="true" />
+        <source-file src="src/ios/CDVBackgroundGeoLocation.m" />
+        <header-file src="src/ios/CDVBackgroundGeoLocation.h" />
+     </platform>  
+
+</plugin>
