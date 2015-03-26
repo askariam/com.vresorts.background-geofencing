@@ -106,7 +106,7 @@ function toRad(Value) {
 function calculateSleepTimeETA(){
     //Calculate the distance between the current position and the store's location
     // Latitude/longitude spherical geodesy formulae & scripts (c) Chris Veness 2002-2011                   - www.movable-type.co.uk/scripts/latlong.html 
-    // where R is earth’s radius (mean radius = 6,371km);
+    // where R is earth���s radius (mean radius = 6,371km);
     // note that angles need to be in radians to pass to trig functions!
     if(storeLocation != "undefined" && currentLocationLatitude != "undefined" && currentLocationLongitude != "undefined")
     {
@@ -350,13 +350,13 @@ function getCurrentPosition(){
     {
         // Get the most accurate position updates available on the
         // device.
-        getCurrentLocation(onSuccess, onError);
+    	window.plugins.backgroundGeofencing.getCurrentLocation(onSuccess, onError);
 
     }
     else
     {
         // Just get a location, even if not accurate
-        getCurrentLocation(onSuccess,onError);
+    	window.plugins.backgroundGeofencing.getCurrentLocation(onSuccess,onError);
     }
 }
 function onSuccess(position) {

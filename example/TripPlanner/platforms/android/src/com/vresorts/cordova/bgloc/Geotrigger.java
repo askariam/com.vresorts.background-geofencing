@@ -201,17 +201,7 @@ public class Geotrigger {
 		List<Place> places = this.tripplan.getPlaces();
 		for(Place place : places){
 			if(place.isSubscribed()){
-			Geofence geofence = place.getGeofence();
-			PendingIntent stationaryRegionPI = this.getPendingIntentByPlace(place, true);
-			
-			
-			locationManager.addProximityAlert(
-	                geofence.getLatitude(),
-	                geofence.getLongitude(),
-	                geofence.getRadius(),
-	                (long)-1,
-	                stationaryRegionPI
-	        );
+				registerPlace(place);
 			
 		}
 		}
@@ -230,11 +220,7 @@ public class Geotrigger {
 			List<Place> places = this.tripplan.getPlaces();
 			for(Place place : places){
 				if(place.isSubscribed()){
-				PendingIntent pendingIntent = this.getPendingIntentByPlace(place, false);
-				if(pendingIntent != null){
-					this.locationManager.removeProximityAlert(pendingIntent);
-					Log.v(Config.TAG, place.getPlaceName()+" removed");
-				}
+					this.unregisterPlace(place);
 				}
 			}
 			}
@@ -295,6 +281,99 @@ public class Geotrigger {
 
 	public void configure(TripPlan tripPlanToConfigure) {
 		this.tripplan = tripPlanToConfigure;
+	}
+
+
+	public boolean addPlace(Place place) {
+		if(place != null && this.tripplan != null){
+			if(tripplan.getPlaceByUuid(place.getUuid()) != null){
+				return false;
+			}
+			else{
+				if(place.isSubscribed()){
+				this.registerPlace(place);
+				}
+				tripplan.addPlace(place);
+			}
+		}
+		return false;
+	}
+	
+	private void registerPlace(Place place){
+		Geofence geofence = place.getGeofence();
+		if(geofence!= null){
+		PendingIntent stationaryRegionPI = this.getPendingIntentByPlace(place, true);
+		locationManager.addProximityAlert(
+                geofence.getLatitude(),
+                geofence.getLongitude(),
+                geofence.getRadius(),
+                (long)-1,
+                stationaryRegionPI
+        );
+		}
+	}
+	
+	private void unregisterPlace(Place place){
+		PendingIntent pendingIntent = this.getPendingIntentByPlace(place, false);
+		if(pendingIntent != null){
+			this.locationManager.removeProximityAlert(pendingIntent);
+			Log.v(Config.TAG, place.getPlaceName()+" removed");
+		}
+	}
+
+
+	public boolean deletePlace(String placeUuid) {
+		if(placeUuid != null && this.tripplan != null){
+			Place place = null;
+			if((place = tripplan.removePlace(placeUuid)) == null){
+				return false;
+			}
+			else{
+				if(place.isSubscribed()){
+				this.registerPlace(place);
+				}
+				return true;
+			}
+		}
+		return false;
+	}
+
+
+	public boolean enablePlace(String placeUuid) {
+		if(placeUuid != null && this.tripplan != null){
+		 Place place = tripplan.getPlaceByUuid(placeUuid);
+		 if(place == null){
+			 return false;
+		 }
+		 else{
+			if(!place.isSubscribed()){
+			place.setSubscribed(true);
+			this.registerPlace(place);
+			}
+			return true;
+	          
+		 }
+		}
+		return false;
+	}
+
+
+	public boolean disablePlace(String placeUuid) {
+		if(placeUuid != null && this.tripplan != null){
+			 Place place = tripplan.getPlaceByUuid(placeUuid);
+			 if(place == null){
+				 return false;
+			 }
+			 else{
+				if(place.isSubscribed()){
+				place.setSubscribed(false);
+				this.unregisterPlace(place);
+				}
+				return true;
+		          
+			 }
+			}
+			return false;
 	}
 
 }

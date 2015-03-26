@@ -9,7 +9,8 @@ var PLACE_ATTRIBUTES = [
     "trip_plan_uuid",
     "is_subscribed",
     "short_desc",
-    "offer_uuid"
+    "offer_uuid",
+    "geofence"
 ];
 
 function createPlace(createPlaceObj, successCB, errorCB) {
@@ -45,12 +46,13 @@ function togglePlaceSubscription(placeUUID) {
 
 
          if(place.is_subscribed =="true") {
-             //unsubscribeData.is_subscribed = "false";
-             disablePlace(scb,ecb,placeUUID);
+
+        	 //unsubscribeData.is_subscribed = "false";
+        	 window.plugins.backgroundGeofencing.disablePlace(scb,ecb,{"place_uuid": placeUUID});
          }
          else {
-             //unsubscribeData.is_subscribed = "true";
-             enablePlace(scb,ecb,placeUUID);
+        	//unsubscribeData.is_subscribed = "true";
+        	 window.plugins.backgroundGeofencing.enablePlace(scb,ecb,{"place_uuid": placeUUID});
          }
 
          

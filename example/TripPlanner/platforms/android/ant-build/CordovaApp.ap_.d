@@ -200,7 +200,6 @@
 /Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/assets/www/js/external/apigee.min.js \
 /Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/assets/www/js/external/datetimepicker \
 /Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/assets/www/js/external/fullcalendar-2.0.0 \
-/Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/assets/www/js/external/index.js \
 /Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/assets/www/js/external/jquery-1.11.0.js \
 /Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/assets/www/js/external/jquery-1.11.0.min.js \
 /Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/assets/www/js/external/jquery-2.1.1.js \

@@ -7,11 +7,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Criteria;
@@ -109,144 +105,141 @@ public class BackgroundGeofencingPlugin extends CordovaPlugin {
             
             if(tripPlanToConfigure != null){
             this.geotrigger.configure(tripPlanToConfigure);
-//            this.geoTrigger.setGeotriggerListener(geotriggerListener);
             result = true;
             callbackContext.success("configure succeed");
             }
+        } else if (ACTION_RECONFIGURE.equalsIgnoreCase(action)){
+           
+            TripPlan tripPlanToConfigure = null;
+            try {
+        		TripPlanParser parser = new TripPlanParser(data.toString());
+        		tripPlanToConfigure = parser.getTripplan();
+        		
+			} catch (Exception e) {
+				e.printStackTrace();
+				callbackContext.error("Errors occur when parsing tripplan data");
+			}
             
+            if(tripPlanToConfigure != null){
+            this.geotrigger.reconfigure(tripPlanToConfigure);
+            result = true;
+            callbackContext.success("configure succeed");
+            }
         }
-    	else if (ACTION_RECONFIGURE.equalsIgnoreCase(action)) {
-//            if(!isStarted){
-//            	callbackContext.error("The service is not started yet");
-//            }
-//            else{
-//            TripPlan tripPlanToReconfigure = null;
-//            try {
-//        		TripPlanParser parser = new TripPlanParser(data.toString());
-//        		tripPlanToReconfigure = parser.getTripplan();
-//        		
-//			} catch (Exception e) {
-//				e.printStackTrace();
-//				callbackContext.error("Errors occur when parsing tripplan data");
-//			}
-//            
-//            if(tripPlanToReconfigure != null && this.geoTrigger !=null){
-//            tripPlan = tripPlanToReconfigure;
-//            this.geoTrigger.reset(tripPlan);
-//            }
-//            result = true;
-//            callbackContext.success("reconfigure succeed");
-//            }
-//            
-        } 
         else if( ACTION_ADDPLACE.equalsIgnoreCase(action)){
-//        	if(tripPlan == null){
-//        		callbackContext.error("The service is not configured yet");
-//        	}
-//        	else if(!isStarted){
-//        		callbackContext.error("The service is not started yet");
-//        	}
-//        	else{
-//        		Place place= null;
-//        		 try {
-//             		PlaceParser parser = new PlaceParser(data.toString());
-//             		place = parser.getPlace();
-//     			} catch (Exception e) {
-//     				e.printStackTrace();
-//     			}
-//        		
-//        		 if(place == null){
-//      				callbackContext.error("Errors occur when parsing tripplan data");
-//        		 }
-//        		 else{
-//        			 String placeUuid = place.getUuid();
-//        			 Place existantPlace = tripPlan.getPlaceByUuid(placeUuid);
-//        			 if(existantPlace != null){
-//        				 callbackContext.error("place is already existing");
-//        			 }
-//        			 else{
-//        			 if(tripPlan != null && this.geoTrigger !=null){
-//
-//            			 tripPlan.addPlace(place);
-//        		            this.geoTrigger.reset(tripPlan);
-//        		            }
-//        		            result = true;
-//        		            callbackContext.success("adding place succeed");
-//        			 }
-//        		 }
-//        	}
+        	if(!this.geotrigger.isConfigured()){
+        		callbackContext.error("The service is not configured yet");
+        	} else {
+        		Place place= null;
+        		 try {
+             		PlaceParser parser = new PlaceParser(data.toString());
+             		place = parser.getPlace();
+     			} catch (Exception e) {
+     				e.printStackTrace();
+     			}
+        		
+        		 if(place == null){
+      				callbackContext.error("Errors occur when parsing tripplan data");
+        		 }
+        		 else{
+        			boolean isAdded = this.geotrigger.addPlace(place);
+        			if(isAdded){
+        				result = true;
+        				callbackContext.success("adding place succeed");
+        			}
+        			else{
+        				callbackContext.error("failed to add place");
+        			}
+        			 
+        		 }
+        	}
         	
         }
         else if(ACTION_DELETEPLACE.equalsIgnoreCase(action)){
-//        	if(tripPlan == null){
-//        		callbackContext.error("The service is not configured yet");
-//        	}
-//        	else if(!isStarted){
-//        		callbackContext.error("The service is not started yet");
-//        	}
-//        	else{
-//        		String placeUuid= null;
-//        		 try {
-//             		PlaceUuidParser parser = new PlaceUuidParser(data.toString());
-//             		placeUuid = parser.getPlaceUuid();
-//     			} catch (Exception e) {
-//     				e.printStackTrace();
-//     			}
-//        		
-//        		 if(placeUuid == null){
-//      				callbackContext.error("Errors occur when parsing place uuid");
-//        		 }
-//        		 else{
-//        			 Place existantPlace = tripPlan.getPlaceByUuid(placeUuid);
-//        			 if(existantPlace == null){
-//        				 callbackContext.error("place is not existing");
-//        			 }
-//        			 else{
-//        				 if(tripPlan != null && this.geoTrigger !=null){
-//        					tripPlan.removePlace(placeUuid);
-//         		            this.geoTrigger.reset(tripPlan);
-//         		            }
-//         		            result = true;
-//         		           callbackContext.success("deleting place succeed");
-//        			
-//        			 }
-//        		 }
-//        	}
+        	if(!this.geotrigger.isConfigured()){
+    		callbackContext.error("The service is not configured yet");
+    	} else {
+    		String placeUuid= null;
+   		 try {
+        		PlaceUuidParser parser = new PlaceUuidParser(data.toString());
+        		placeUuid = parser.getPlaceUuid();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+   		
+   		 if(placeUuid == null){
+ 				callbackContext.error("Errors occur when parsing place uuid");
+   		 }
+    		 else{
+    			boolean isDeleted = this.geotrigger.deletePlace(placeUuid);
+    			if(isDeleted){
+    				result = true;
+    				callbackContext.success("deleting place succeed");
+    			}
+    			else{
+    				callbackContext.error("failed to delete place");
+    			}
+    			 
+    		 }
+    	}
         }
-        else if(ACTION_ENABLEPLACE.equalsIgnoreCase(action) || ACTION_DISABLEPLACE.equalsIgnoreCase(action)){
-//        	if(tripPlan == null){
-//        		callbackContext.error("The service is not configured yet");
-//        	}
-//        	else if(!isStarted){
-//        		callbackContext.error("The service is not started yet");
-//        	}
-//        	else{
-//        		String placeUuid= null;
-//        		 try {
-//             		PlaceUuidParser parser = new PlaceUuidParser(data.toString());
-//             		placeUuid = parser.getPlaceUuid();
-//     			} catch (Exception e) {
-//     				e.printStackTrace();
-//     			}
-//        		
-//        		 if(placeUuid == null){
-//      				callbackContext.error("Errors occur when parsing place uuid");
-//        		 }
-//        		 else{
-//        			 Place existantPlace = tripPlan.getPlaceByUuid(placeUuid);
-//        			 if(existantPlace == null){
-//        				 callbackContext.error("place is not existing");
-//        			 }
-//        			 else{
-//        			 if(tripPlan != null && this.geoTrigger !=null){
-//            			 existantPlace.setSubscribed(ACTION_ENABLEPLACE.equalsIgnoreCase(action) ? true : false);
-//     		            this.geoTrigger.reset(tripPlan);
-//     		            }
-//     		            result = true;
-//     		           callbackContext.success("enable place succeed");
-//        			 }
-//        		 }
-//        	}
+        else if(ACTION_ENABLEPLACE.equalsIgnoreCase(action)){
+        	if(!this.geotrigger.isConfigured()){
+        		callbackContext.error("The service is not configured yet");
+        	}
+        	else{
+        		String placeUuid= null;
+        		 try {
+             		PlaceUuidParser parser = new PlaceUuidParser(data.toString());
+             		placeUuid = parser.getPlaceUuid();
+     			} catch (Exception e) {
+     				e.printStackTrace();
+     			}
+        		
+        		 if(placeUuid == null){
+      				callbackContext.error("Errors occur when parsing place uuid");
+        		 }
+        		 else{
+        			 boolean isEnabled = this.geotrigger.enablePlace(placeUuid);
+        			 if(isEnabled){
+        			 result = true;
+   		           callbackContext.success("enable place succeed");
+        			 }
+        			 else{
+        				 callbackContext.error("failed to enable place");
+        			 }
+        			
+        		 }
+        	}
+        }
+        else if(ACTION_DISABLEPLACE.equalsIgnoreCase(action)){
+        	if(!this.geotrigger.isConfigured()){
+        		callbackContext.error("The service is not configured yet");
+        	}
+        	else{
+        		String placeUuid= null;
+        		 try {
+             		PlaceUuidParser parser = new PlaceUuidParser(data.toString());
+             		placeUuid = parser.getPlaceUuid();
+     			} catch (Exception e) {
+     				e.printStackTrace();
+     			}
+        		
+        		 if(placeUuid == null){
+      				callbackContext.error("Errors occur when parsing place uuid");
+        		 }
+        		 else{
+        			 boolean isEnabled = this.geotrigger.disablePlace(placeUuid);
+        			 if(isEnabled){
+        			 result = true;
+   		           callbackContext.success("disable place succeed");
+        			 }
+        			 else{
+        				 callbackContext.error("failed to disable place");
+        			 }
+        			
+        		 }
+        	}
         }
         else if(ACTION_GETCURRENTLOCATION.equalsIgnoreCase(action)){
         	 final LocationManager locationManager = (LocationManager) this.cordova.getActivity().getSystemService(Context.LOCATION_SERVICE);

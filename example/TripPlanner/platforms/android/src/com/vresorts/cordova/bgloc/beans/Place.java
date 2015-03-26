@@ -118,7 +118,9 @@ public class Place{
 			object.put("short_desc", this.shortDesc);
 			object.put("trip_plan_uuid", this.tripPlanUuid);
 			object.put("user_uuid", this.userUuid);
+			if(geofence != null){
 			object.put("geofence", this.geofence.toJSONObject());
+			}
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}

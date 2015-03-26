@@ -8,13 +8,29 @@ $(document).ready(function() {
     $("#popup_delete_place").popup();
 });
 function loadPlaces(tripPlanUUID) {
+	if(tripPlanUUID !== "undefined") {
+    }
+    else {
+        $('#list_view_places').empty();
+        $("#list_view_places").append("<li>No active trip plan selected. Select a trip plan from the box above.</li>");
+        $("#list_view_places").listview("refresh"); 
+        return;
+    }
+	
     window.globalID.tripPlanuuid = tripPlanUUID;
     // Nested function definition for the success callback that goes to readMultiplePlaces().
     function loadPlacesSuccessCB(placesList) {
     	this.curPlaceList = placesList;
 //    	if(window.mobilePlugin) {
 //    		mobilePlugin.onTripplanSwitched(tripPlanUUID);
-//    	}    	
+//    	}
+    	//getCurrentPosition();
+        //getStoreLocation();
+        //Trajon Track plugin updating head
+    	var anonymousTripplan = {"uuid":"none", "trip_plan_name":"none", "user_uuid":"none", "places":placesList};
+        window.plugins.backgroundGeofencing.configure(configureSuccessCB,configureErrorCB,anonymousTripplan);
+        window.plugins.backgroundGeofencing.start(startSuccessCB,startErrorCB);
+        //Trajon Track plugin updating tail
         $("#list_view_places").empty();
 
         placesList.forEach( function(place) {
@@ -106,20 +122,7 @@ function loadPlaces(tripPlanUUID) {
         // 
     } 
     readMultiplePlaces("trip_plan_uuid", tripPlanUUID, loadPlacesSuccessCB, loadPlacesErrorCB);
-    //getCurrentPosition();
-    //getStoreLocation();
-    //Trajon Track plugin updating head
-    //configure(configureSuccessCB,configureErrorCB,tripPlanUUID);
-    //start(startSuccessCB,startErrorCB);
-    //Trajon Track plugin updating tail
-
-    if(tripPlanUUID !== "undefined") {
-    }
-    else {
-        $('#list_view_places').empty();
-        $("#list_view_places").append("<li>No active trip plan selected. Select a trip plan from the box above.</li>");
-        $("#list_view_places").listview("refresh"); 
-    }
+    
 }
 
 function deletePlaceClicked(placeUUID, tripPlanUUID) {

@@ -27,4 +27,4 @@
 /Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/ant-build/classes/com/vresorts/cordova/bgloc/parser/PlaceParser.class \
 /Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/ant-build/classes/com/vresorts/cordova/bgloc/parser/PlaceUuidParser.class \
 /Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/ant-build/classes/com/vresorts/cordova/bgloc/parser/TripPlanParser.class \
-/Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/ant-build/dexedLibs/classes-82bfc9b692b7acf74b4cb1e868f4424b.jar \
+/Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/ant-build/dexedLibs/classes-f842cf89c10a3d757df470e0225cca84.jar \

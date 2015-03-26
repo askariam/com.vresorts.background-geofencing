@@ -9,7 +9,7 @@ module.exports = {
           );
     },
     
-    disablePlace: function(succuss, failure, placeUuid){
+    disablePlace: function(success, failure, placeUuid){
     	 exec(success || function() {},
                  failure || function() {},
                  'BackgroundGeofencing',
@@ -18,7 +18,7 @@ module.exports = {
             );
     },
     
-    enablePlace: function(success, failture, placeUuid){
+    enablePlace: function(success, failure, placeUuid){
     	 exec(success || function() {},
                  failure || function() {},
                  'BackgroundGeofencing',
