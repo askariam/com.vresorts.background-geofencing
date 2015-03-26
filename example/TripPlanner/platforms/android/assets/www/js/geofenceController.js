@@ -214,7 +214,6 @@ function checkIfInside(){
     else if(distanceLeft<=storeGeofenceRadius && insideGeofence==false && insideNeighborhood==true) //Trying to enter, just entered store's geofence
     {
         insideGeofence=true;
-
        
         displayString+="INSIDE GEOFENCE...COUPON DELIVERED!!";
         addNotification(storeLocation.places[minDistStoreID].offer_uuid,storeLocation.places[minDistStoreID].place_name)

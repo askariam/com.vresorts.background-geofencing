@@ -47,19 +47,24 @@ function togglePlaceSubscription(placeUUID) {
 
          if(place.is_subscribed =="true") {
 
-        	 //unsubscribeData.is_subscribed = "false";
-        	 window.plugins.backgroundGeofencing.disablePlace(scb,ecb,{"place_uuid": placeUUID});
+        	 unsubscribeData.is_subscribed = "false";
          }
          else {
-        	//unsubscribeData.is_subscribed = "true";
-        	 window.plugins.backgroundGeofencing.enablePlace(scb,ecb,{"place_uuid": placeUUID});
+        	unsubscribeData.is_subscribed = "true";
          }
 
          
-        function scb() {}
+        function scb(place) {
+        	 if(place.is_subscribed =="true") {
+            	 window.plugins.backgroundGeofencing.enablePlace(function(){},function(){},{"place_uuid": placeUUID});
+             }
+             else {
+            	 window.plugins.backgroundGeofencing.disablePlace(function(){},function(){},{"place_uuid": placeUUID});
+             }
+        }
         function ecb() {}
         
-        //modifyEntity(unsubscribeData, scb, ecb);
+        modifyEntity(unsubscribeData, scb, ecb);
     }
 
     function togglePlaceSubscriptionErrorCB() {
