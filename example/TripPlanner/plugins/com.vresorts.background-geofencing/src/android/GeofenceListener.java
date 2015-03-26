@@ -1,6 +1,6 @@
 package com.vresorts.cordova.bgloc;
 
-import com.vresorts.backgroundGeofencing.CordovaApp;
+import com.example.tripplan.CordovaApp;
 import com.vresorts.cordova.bgloc.beans.Place;
 import com.vresorts.cordova.bgloc.parser.PlaceParser;
 

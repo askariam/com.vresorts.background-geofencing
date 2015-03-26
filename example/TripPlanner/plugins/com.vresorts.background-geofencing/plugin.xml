@@ -6,7 +6,7 @@
     version="0.3.6">
     <name>CDVBackgroundGeoFencing</name>
     <description>Cordova Background Geofencing Plugin</description>
-    <license>MIT</license>
+    <license>USC</license>
     <keywords>phonegap,background Geofencing</keywords>
 
     <engines>
@@ -101,6 +101,10 @@
         <framework src="AVFoundation.framework" weak="true" />
         <source-file src="src/ios/CDVBackgroundGeoLocation.m" />
         <header-file src="src/ios/CDVBackgroundGeoLocation.h" />
+         <source-file src="src/ios/CDVLocation.m" />
+        <header-file src="src/ios/CDVLocation.h" />
+         <source-file src="src/ios/CDVNotification.m" />
+        <header-file src="src/ios/CDVNotification.h" />
      </platform>  
 
 </plugin>

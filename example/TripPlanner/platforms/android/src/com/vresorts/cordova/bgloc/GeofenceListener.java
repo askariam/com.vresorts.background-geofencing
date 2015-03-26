@@ -114,7 +114,7 @@ public class GeofenceListener extends BroadcastReceiver{
 
             
             Notification.Builder builder = new Notification.Builder(activity);
-            builder.setContentTitle("farewell:"+place.getPlaceName());
+            builder.setContentTitle("welfare:"+place.getPlaceName());
             builder.setContentText("exit:" + place.getPlaceName());
             builder.setSmallIcon(android.R.drawable.ic_menu_mylocation);
             builder.setContentIntent(pendingIntent);
