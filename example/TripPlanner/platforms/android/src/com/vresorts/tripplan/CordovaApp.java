@@ -17,7 +17,7 @@
        under the License.
  */
 
-package com.example.tripplan;
+package com.vresorts.tripplan;
 
 import android.os.Bundle;
 import org.apache.cordova.*;

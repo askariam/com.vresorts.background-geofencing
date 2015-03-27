@@ -8,19 +8,30 @@ import java.util.List;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.annotation.SuppressLint;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.location.LocationManager;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.vresorts.cordova.bgloc.beans.Geofence;
 import com.vresorts.cordova.bgloc.beans.Place;
 import com.vresorts.cordova.bgloc.beans.TripPlan;
+import com.vresorts.cordova.bgloc.parser.PlaceParser;
 import com.vresorts.cordova.bgloc.parser.TripPlanParser;
+import com.vresorts.tripplan.CordovaApp;
+import com.vresorts.tripplan.R;
 
-public class Geotrigger {
+@SuppressLint({ "NewApi", "Instantiatable" })
+public class Geotrigger extends BroadcastReceiver{
 	
 	private TripPlan tripplan;
 	
@@ -49,6 +60,7 @@ public class Geotrigger {
 //	public void setGeotriggerListener(GeotriggerListener geotriggerListener) {
 //		this.geotriggerListener = geotriggerListener;
 //	}
+	
 	
 	
 	private static class GeotriggerConfig extends JSONObject{
@@ -190,6 +202,10 @@ public class Geotrigger {
 		}
 	}
 	
+	public Geotrigger(){
+		
+	}
+	
 	public void start(){
 		if(this.isEnabled){
 			Log.v(Config.TAG, "has started");
@@ -241,7 +257,7 @@ public class Geotrigger {
 		builder.appendQueryParameter("placeUuid", place.getUuid());
 		intent.setData(builder.build());
 		
-		intent.putExtra(GeofenceListener.INTENT_EXTRA_FIELD_PLACE, place.toJSONObject().toString());
+		intent.putExtra(INTENT_EXTRA_FIELD_PLACE, place.toJSONObject().toString());
 		
 		int flag = PendingIntent.FLAG_UPDATE_CURRENT;
 		
@@ -375,5 +391,125 @@ public class Geotrigger {
 			}
 			return false;
 	}
+	
+public static final String INTENT_EXTRA_FIELD_PLACE = "place";
+	
+	
+
+	@Override
+	public void onReceive(Context context, Intent intent) {
+		    Log.i(Config.TAG, "stationaryRegionReceiver");
+	            String key = LocationManager.KEY_PROXIMITY_ENTERING;
+
+	            Boolean entering = intent.getBooleanExtra(key, false);
+	            
+	            String placeData = intent.getStringExtra(INTENT_EXTRA_FIELD_PLACE);
+	            if(placeData == null){
+	            	return;
+	            }
+	            
+	            Place place = null;
+				try {
+					PlaceParser placeParser = new PlaceParser(placeData);
+
+		             place = placeParser.getPlace();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				
+				if(place == null){
+					Log.v(Config.TAG, "place is null");
+					return;
+				}
+	            
+	            IGeotriggerListener geotriggerListener = new GeotriggerListener(context);
+
+	            if (entering) {
+	                Log.d(Config.TAG, "- ENTER");
+	                place.timeStamp();
+	                geotriggerListener.onEnter(place, place.getTimeStamp());
+	            }
+	            else if (!entering){
+	                Log.d(Config.TAG, "- EXIT");
+	                long enterTime = place.getTimeStamp();
+	                place.timeStamp();
+	                long duration = place.getTimeStamp() - enterTime;
+	                geotriggerListener.onExit(place, place.getTimeStamp(), duration);
+	            }
+	            
+		
+	}
+	
+	
+    
+	public static interface IGeotriggerListener{
+		public void onEnter(Place place, long time);
+		public void onExit(Place place, long time, long duration);
+	}
+    
+    private static class GeotriggerListener implements IGeotriggerListener{
+    	Context activity;
+    	GeotriggerListener(Context context){
+    		activity = context;
+    	}
+
+		@Override
+		public void onEnter(Place place, long time) {
+//			Activity activity = BackgroundGeofencingPlugin.this.cordova.getActivity();
+			NotificationManager mNotificationManager = (NotificationManager) activity.getSystemService(Context.NOTIFICATION_SERVICE);
+			JSONObject offerData = new JSONObject();
+			try {
+				offerData.put("offerUuid", place.getOfferUuid());
+				offerData.put("placeName", place.getPlaceName());
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			Intent main = new Intent(activity, CordovaApp.class);
+			main.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			main.putExtra(BackgroundGeofencingPlugin.INTENT_EXTRA_KEY_NOTIFICATION_OFFER_DATA, offerData.toString());
+            PendingIntent pendingIntent = PendingIntent.getActivity(activity, 0, main,  PendingIntent.FLAG_UPDATE_CURRENT);
+
+            Notification.Builder builder = new Notification.Builder(activity);
+            builder.setContentTitle(place.getPlaceName()+"has a new offer");
+            builder.setContentText("Click here to view the offer");
+            builder.setSmallIcon(R.drawable.icon);
+            builder.setContentIntent(pendingIntent);
+            builder.setAutoCancel(true);
+            builder.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+            
+            mNotificationManager.notify((int) System.currentTimeMillis(), builder.build());
+            
+			
+			Log.v(Config.TAG, "enter into place :" + place.getPlaceName() + "	at time:" + time);
+		}
+
+		@Override
+		public void onExit(Place place, long time, long duration) {
+//			Activity activity = BackgroundGeofencingPlugin.this.cordova.getActivity();
+//			NotificationManager mNotificationManager = (NotificationManager) activity.getSystemService(Context.NOTIFICATION_SERVICE);
+//			
+//			Intent main = new Intent(activity, CordovaApp.class);
+//            main.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//            
+//            PendingIntent pendingIntent = PendingIntent.getActivity(activity, 0, main,  PendingIntent.FLAG_UPDATE_CURRENT);
+//            Notification.Builder builder = new Notification.Builder(activity);
+//            builder.setContentTitle("farewell:"+place.getPlaceName());
+//            builder.setContentText("exit:" + place.getPlaceName());
+//            builder.setSmallIcon(android.R.drawable.ic_menu_mylocation);
+//            builder.setContentIntent(pendingIntent);
+//            builder.setAutoCancel(true);
+//            
+//            mNotificationManager.notify((int) System.currentTimeMillis(), builder.build());
+			
+			Toast.makeText(activity, "exit place:" + place.getPlaceName(), Toast.LENGTH_LONG);
+            
+			Log.v(Config.TAG, "exit place :" + place.getPlaceName() + "	at time:" + time + "	for:" + duration);
+		}
+    	
+    };
+    
+
 
 }

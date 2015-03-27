@@ -1,7 +1,11 @@
 package com.vresorts.cordova.bgloc;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
+import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,11 +39,14 @@ public class BackgroundGeofencingPlugin extends CordovaPlugin {
     public static final String ACTION_ADDPLACE = "addPlace";
     public static final String ACTION_DELETEPLACE = "deletePlace";
     public static final String ACTION_GETCURRENTLOCATION = "getCurrentLocation";
+    public static final String ACTION_SETONNOTIFICATIONCLICKEDCALLBACK = "setOnNotificationClickedCallback";
     
     //public static final String ACTION_SET_CONFIG = "setConfig";
     public static final String ACTION_MOCK = "mock";
     public static final String ACTION_MOCK_START = "startMock";
     public static final String ACTION_MOCK_STOP = "stopMock";
+    
+    public static final String INTENT_EXTRA_KEY_NOTIFICATION_OFFER_DATA = "com.vresorts.cordova.bgloc.NOTIFICATION_OFFER_DATA";
     
     private Geofaker geoFaker;
     
@@ -59,11 +66,26 @@ public class BackgroundGeofencingPlugin extends CordovaPlugin {
 		super.onPause(multitasking);
 		this.geotrigger.onPause();
 	}
+
+	@Override
+	public void onNewIntent(Intent intent) {
+		super.onNewIntent(intent);
+		String offerData = null;
+		if(intent != null && (offerData = intent.getStringExtra(INTENT_EXTRA_KEY_NOTIFICATION_OFFER_DATA)) != null){
+			this.performNotificationClicked(offerData);
+		}
+	}
 	
+	private Map<String, String> callbackIds = new HashMap<String, String>();
 	
+	private void performNotificationClicked(String offerData){
+	    // These lines can be reused anywhere in your app to send data to the javascript
+	    PluginResult result = new PluginResult(PluginResult.Status.OK, offerData);
+	    result.setKeepCallback(true);//This is the important part that allows executing the callback more than once, change to false if you want the callbacks to stop firing  
+	    this.webView.sendPluginResult(result, callbackIds.get(ACTION_SETONNOTIFICATIONCLICKEDCALLBACK)); 
+	}
 
 	public boolean execute(String action, JSONArray data, final CallbackContext callbackContext) {
-        
         Boolean result = false;
 
         if (ACTION_START.equalsIgnoreCase(action)) {
@@ -286,6 +308,12 @@ public class BackgroundGeofencingPlugin extends CordovaPlugin {
                     	 
                      });
              }
+        }
+        else if(ACTION_SETONNOTIFICATIONCLICKEDCALLBACK.equalsIgnoreCase(action)){
+        	String callbackId = callbackContext.getCallbackId(); 
+        	this.callbackIds.put(ACTION_SETONNOTIFICATIONCLICKEDCALLBACK, callbackId);
+            Log.d(Config.TAG, "notificaton callback is set");
+            return true; 
         }
         else if(ACTION_MOCK_START.equalsIgnoreCase(action)){
         	if(this.geoFaker != null && this.geoFaker.isStarted()){

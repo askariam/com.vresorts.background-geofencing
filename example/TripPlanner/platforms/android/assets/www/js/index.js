@@ -34,16 +34,16 @@ var app = {
     // function, we must explicitly call 'app.receivedEvent(...);'
     onDeviceReady: function() {
         app.receivedEvent('deviceready');
+    	window.plugins.backgroundGeofencing.setOnNotificationClickedCallback(function(offerData){
+    		var offer = JSON.parse(offerData);
+        	passwordClicked(offer.offerUuid, offer.placeName);
+        });
+
     },
     // Update DOM on a Received Event
     receivedEvent: function(id) {
-        var parentElement = document.getElementById(id);
-        var listeningElement = parentElement.querySelector('.listening');
-        var receivedElement = parentElement.querySelector('.received');
-
-        listeningElement.setAttribute('style', 'display:none;');
-        receivedElement.setAttribute('style', 'display:block;');
-
         console.log('Received Event: ' + id);
     }
 };
+
+app.initialize();

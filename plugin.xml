@@ -27,8 +27,6 @@
         
         <source-file src="src/android/Geotrigger.java" target-dir="src/com/vresorts/cordova/bgloc" />
         
-        <source-file src="src/android/GeofenceListener.java" target-dir="src/com/vresorts/cordova/bgloc" />
-        
         <source-file src="src/android/beans/Geofence.java" target-dir="src/com/vresorts/cordova/bgloc/beans" />
         
         <source-file src="src/android/beans/Place.java" target-dir="src/com/vresorts/cordova/bgloc/beans" />
@@ -49,7 +47,7 @@
         
          <config-file target="AndroidManifest.xml" parent="/manifest/application">
              <receiver
-            android:name="com.vresorts.cordova.bgloc.GeofenceListener"
+            android:name="com.vresorts.cordova.bgloc.Geotrigger"
             android:enabled="true" >
             <intent-filter>
                 <action android:name="com.vresorts.cordova.bgloc.STATIONARY_REGION_ACTION_TRIGGERED" />
