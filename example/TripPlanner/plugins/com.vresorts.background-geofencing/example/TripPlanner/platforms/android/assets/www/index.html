@@ -40,7 +40,6 @@
         </script>
  
         <script type="text/javascript" src="./js/external/jquery-2.1.1.js"></script>
-        <script type="text/javascript" src="./js/external/index.js"></script>
 
         <script type="text/javascript" src="./js/external/jquery-1.11.0.min.js"></script>
         <script type="text/javascript" src="./js/external/jquery.mobile-1.4.2.min.js"></script>
@@ -67,6 +66,9 @@
         <script type="text/javascript" src="./js/redeemController.js"></script>
         <script type="text/javascript" src="./js/jquery-barcode.js"></script>
         
+        
+        <script type="text/javascript" src="./js/index.js"></script>
+        
 
         <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
         <script type="text/javascript">
@@ -84,7 +86,7 @@
             
             
         function initialize() {
-                $("#page_user_auto_login").bind("pagebeforeshow", function(event) {
+            $("#page_user_auto_login").bind("pagebeforeshow", function(event) {
                     autoLogin();
                 });
                 autoLogin();
@@ -101,13 +103,6 @@
                 var headbanner = document.getElementsByClassName("ui-title");
                 headbanner[0].innerHTML = "Version " + VERSION_NUMBER;
             }
-        window.plugin.notification.local.promptForPermission(function (granted) {
-             console.log("promptForPermission: "+granted);
-        });
-                                                             
-        window.plugin.notification.local.hasPermission(function (granted) {
-             console.log("hasPermission: "+granted);
-        });
                                                                                                             
             function autoLogin() {
                 if (URL_STRING !== "") {
@@ -302,7 +297,8 @@
         <div data-role="page" id="page_display_trip_plan">
             <div data-role="header">
                 <h1></h1>
-                <a data-role="button" href="#page_mock_map">Map</a>
+               <!--  <a data-role="button" href="#page_mock_map">Map</a> -->
+               <a data-role="button" href="geofaker.html">Geofaker</a>
                 <div data-role="controlgroup" class="ui-btn-right" data-type="horizontal">
                     <select id="select_trip_plan" name="select_trip_plan" data-native-menu="false" data-mini="true"></select>
                 </div>

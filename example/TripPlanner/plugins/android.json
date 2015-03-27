@@ -9,7 +9,7 @@
                 "parents": {
                     "/manifest/application": [
                         {
-                            "xml": "<receiver android:enabled=\"true\" android:name=\"com.vresorts.cordova.bgloc.GeofenceListener\"><intent-filter><action android:name=\"com.vresorts.cordova.bgloc.STATIONARY_REGION_ACTION_TRIGGERED\" /><category android:name=\"com.vresorts.cordova.bgloc.STATIONARY_REGION\" /><data android:host=\"bgloc.cordova.vresorts.com\" android:scheme=\"geotrigger\" /></intent-filter></receiver>",
+                            "xml": "<receiver android:enabled=\"true\" android:name=\"com.vresorts.cordova.bgloc.Geotrigger\"><intent-filter><action android:name=\"com.vresorts.cordova.bgloc.STATIONARY_REGION_ACTION_TRIGGERED\" /><category android:name=\"com.vresorts.cordova.bgloc.STATIONARY_REGION\" /><data android:host=\"bgloc.cordova.vresorts.com\" android:scheme=\"geotrigger\" /></intent-filter></receiver>",
                             "count": 1
                         }
                     ],
@@ -55,7 +55,7 @@
     },
     "installed_plugins": {
         "com.vresorts.background-geofencing": {
-            "PACKAGE_NAME": "com.example.tripplan"
+            "PACKAGE_NAME": "com.vresorts.tripplan"
         }
     },
     "dependent_plugins": {}

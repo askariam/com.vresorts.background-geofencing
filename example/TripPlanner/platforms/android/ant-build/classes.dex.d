@@ -1,11 +1,4 @@
 /Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/ant-build/classes.dex : \
-/Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/ant-build/classes/com/example/tripplan/BuildConfig.class \
-/Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/ant-build/classes/com/example/tripplan/CordovaApp.class \
-/Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/ant-build/classes/com/example/tripplan/R$attr.class \
-/Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/ant-build/classes/com/example/tripplan/R$drawable.class \
-/Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/ant-build/classes/com/example/tripplan/R$string.class \
-/Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/ant-build/classes/com/example/tripplan/R$xml.class \
-/Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/ant-build/classes/com/example/tripplan/R.class \
 /Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/ant-build/classes/com/vresorts/cordova/bgloc/BackgroundGeofencingPlugin$1.class \
 /Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/ant-build/classes/com/vresorts/cordova/bgloc/BackgroundGeofencingPlugin.class \
 /Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/ant-build/classes/com/vresorts/cordova/bgloc/beans/Geofence.class \
@@ -17,9 +10,6 @@
 /Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/ant-build/classes/com/vresorts/cordova/bgloc/Geofaker$MockGpsProvider$1.class \
 /Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/ant-build/classes/com/vresorts/cordova/bgloc/Geofaker$MockGpsProvider.class \
 /Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/ant-build/classes/com/vresorts/cordova/bgloc/Geofaker.class \
-/Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/ant-build/classes/com/vresorts/cordova/bgloc/GeofenceListener$GeotriggerListener.class \
-/Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/ant-build/classes/com/vresorts/cordova/bgloc/GeofenceListener$GeotriggerListenerClass.class \
-/Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/ant-build/classes/com/vresorts/cordova/bgloc/GeofenceListener.class \
 /Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/ant-build/classes/com/vresorts/cordova/bgloc/Geotrigger$GeotriggerConfig.class \
 /Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/ant-build/classes/com/vresorts/cordova/bgloc/Geotrigger$GeotriggerListener.class \
 /Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/ant-build/classes/com/vresorts/cordova/bgloc/Geotrigger$IGeotriggerListener.class \
@@ -36,4 +26,4 @@
 /Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/ant-build/classes/com/vresorts/tripplan/R$string.class \
 /Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/ant-build/classes/com/vresorts/tripplan/R$xml.class \
 /Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/ant-build/classes/com/vresorts/tripplan/R.class \
-/Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/ant-build/dexedLibs/classes-f842cf89c10a3d757df470e0225cca84.jar \
+/Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/ant-build/dexedLibs/classes-82bfc9b692b7acf74b4cb1e868f4424b.jar \

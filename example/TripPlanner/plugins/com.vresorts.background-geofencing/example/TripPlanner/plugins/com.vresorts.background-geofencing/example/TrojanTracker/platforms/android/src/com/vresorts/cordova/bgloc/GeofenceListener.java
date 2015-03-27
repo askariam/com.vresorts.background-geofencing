@@ -5,8 +5,6 @@ import com.vresorts.cordova.bgloc.parser.PlaceParser;
 import com.vresorts.geotrigger.CordovaApp;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -14,7 +12,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.location.LocationManager;
+import android.media.RingtoneManager;
 import android.util.Log;
+import android.widget.Toast;
 
 @SuppressLint("NewApi")
 public class GeofenceListener extends BroadcastReceiver{
@@ -41,7 +41,6 @@ public class GeofenceListener extends BroadcastReceiver{
 
 		             place = placeParser.getPlace();
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				
@@ -96,6 +95,7 @@ public class GeofenceListener extends BroadcastReceiver{
             builder.setSmallIcon(android.R.drawable.ic_menu_mylocation);
             builder.setContentIntent(pendingIntent);
             builder.setAutoCancel(true);
+            builder.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
             
             mNotificationManager.notify((int) System.currentTimeMillis(), builder.build());
             
@@ -106,21 +106,22 @@ public class GeofenceListener extends BroadcastReceiver{
 		@Override
 		public void onExit(Place place, long time, long duration) {
 //			Activity activity = BackgroundGeofencingPlugin.this.cordova.getActivity();
-			NotificationManager mNotificationManager = (NotificationManager) activity.getSystemService(Context.NOTIFICATION_SERVICE);
+//			NotificationManager mNotificationManager = (NotificationManager) activity.getSystemService(Context.NOTIFICATION_SERVICE);
+//			
+//			Intent main = new Intent(activity, CordovaApp.class);
+//            main.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//            
+//            PendingIntent pendingIntent = PendingIntent.getActivity(activity, 0, main,  PendingIntent.FLAG_UPDATE_CURRENT);
+//            Notification.Builder builder = new Notification.Builder(activity);
+//            builder.setContentTitle("farewell:"+place.getPlaceName());
+//            builder.setContentText("exit:" + place.getPlaceName());
+//            builder.setSmallIcon(android.R.drawable.ic_menu_mylocation);
+//            builder.setContentIntent(pendingIntent);
+//            builder.setAutoCancel(true);
+//            
+//            mNotificationManager.notify((int) System.currentTimeMillis(), builder.build());
 			
-			Intent main = new Intent(activity, CordovaApp.class);
-            main.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            PendingIntent pendingIntent = PendingIntent.getActivity(activity, 0, main,  PendingIntent.FLAG_UPDATE_CURRENT);
-
-            
-            Notification.Builder builder = new Notification.Builder(activity);
-            builder.setContentTitle("welfare:"+place.getPlaceName());
-            builder.setContentText("exit:" + place.getPlaceName());
-            builder.setSmallIcon(android.R.drawable.ic_menu_mylocation);
-            builder.setContentIntent(pendingIntent);
-            builder.setAutoCancel(true);
-            
-            mNotificationManager.notify((int) System.currentTimeMillis(), builder.build());
+			Toast.makeText(activity, "exit place:" + place.getPlaceName(), Toast.LENGTH_LONG);
             
 			Log.v(Config.TAG, "exit place :" + place.getPlaceName() + "	at time:" + time + "	for:" + duration);
 		}

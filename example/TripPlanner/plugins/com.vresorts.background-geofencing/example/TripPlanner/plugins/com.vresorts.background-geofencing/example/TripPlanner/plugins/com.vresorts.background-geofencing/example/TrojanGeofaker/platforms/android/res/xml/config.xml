@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="com.vresorts.geofaker" version="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <preference name="loglevel" value="DEBUG" />
+    <feature name="BackgroundGeofencing">
+        <param name="android-package" value="com.vresorts.cordova.bgloc.BackgroundGeofencingPlugin" />
+    </feature>
+    <name>Trojan Geofaker</name>
+    <description>
+        A minimal example of cordova BackgroundGeofencing plugin.
+    </description>
+    <author email="kqi@usc.edu" href="http://vresorts.com">
+        Kan Qi
+    </author>
+    <content src="index.html" />
+    <access origin="*" />
+</widget>

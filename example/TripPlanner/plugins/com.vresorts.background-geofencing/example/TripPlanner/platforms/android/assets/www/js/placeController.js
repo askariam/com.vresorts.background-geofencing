@@ -7,14 +7,41 @@ if(typeof(Storage)!=="undefined") {
 $(document).ready(function() {
     $("#popup_delete_place").popup();
 });
+
+function requestTripPlan(url, callback){
+	var xmlhttp = new XMLHttpRequest();
+
+	xmlhttp.onreadystatechange = function() {
+	if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+		var myArr = JSON.parse(xmlhttp.responseText);
+	    callback(myArr);
+	    }
+	}
+
+	xmlhttp.open("GET", url, true);
+	xmlhttp.send();
+}
+
 function loadPlaces(tripPlanUUID) {
+	if(tripPlanUUID !== "undefined") {
+    }
+    else {
+        $('#list_view_places').empty();
+        $("#list_view_places").append("<li>No active trip plan selected. Select a trip plan from the box above.</li>");
+        $("#list_view_places").listview("refresh"); 
+        return;
+    }
+	
     window.globalID.tripPlanuuid = tripPlanUUID;
     // Nested function definition for the success callback that goes to readMultiplePlaces().
+    
+    
     function loadPlacesSuccessCB(placesList) {
     	this.curPlaceList = placesList;
 //    	if(window.mobilePlugin) {
 //    		mobilePlugin.onTripplanSwitched(tripPlanUUID);
-//    	}    	
+//    	}
+    
         $("#list_view_places").empty();
 
         placesList.forEach( function(place) {
@@ -89,37 +116,40 @@ function loadPlaces(tripPlanUUID) {
         });
     }
 
-    // Nested function definition for the error callback that goes to readMultiplePlaces()
-    function loadPlacesErrorCB() {
-        // TODO: Deal with this error.
-    }    
-    function configureSuccessCB() {
-        // 
-    }        
-    function configureErrorCB() {
-        // 
-    }     
-    function startSuccessCB() {
-        // 
-    }        
-    function startErrorCB() {
-        // 
-    } 
-    readMultiplePlaces("trip_plan_uuid", tripPlanUUID, loadPlacesSuccessCB, loadPlacesErrorCB);
-    //getCurrentPosition();
-    //getStoreLocation();
-    //Trajon Track plugin updating head
-    //configure(configureSuccessCB,configureErrorCB,tripPlanUUID);
-    //start(startSuccessCB,startErrorCB);
-    //Trajon Track plugin updating tail
-
-    if(tripPlanUUID !== "undefined") {
-    }
-    else {
-        $('#list_view_places').empty();
-        $("#list_view_places").append("<li>No active trip plan selected. Select a trip plan from the box above.</li>");
-        $("#list_view_places").listview("refresh"); 
-    }
+//    readMultiplePlaces("trip_plan_uuid", tripPlanUUID, loadPlacesSuccessCB, loadPlacesErrorCB);
+// 		read data from api.
+    // for test
+    tripPlanUUID = 'a137a68a-be1f-11e4-a532-9192b501077c';
+    requestTripPlan('http://xixixhalu-test.apigee.net/proxy/tripPlanner/getPlaces?trip_plan_uuid='+tripPlanUUID, function(tripplan){
+    	loadPlacesSuccessCB(tripplan.places);
+        // Nested function definition for the error callback that goes to readMultiplePlaces()
+        function loadPlacesErrorCB() {
+            // TODO: Deal with this error.
+        }    
+        function configureSuccessCB() {
+            // 
+        }        
+        function configureErrorCB() {
+            // 
+        }     
+        function startSuccessCB() {
+            // 
+        }        
+        function startErrorCB() {
+            // 
+        } 
+    	var bgGeo = window.plugins.backgroundGeofencing;
+		//getCurrentPosition();
+        //getStoreLocation();
+        //Trajon Track plugin updating head
+    	//var anonymousTripplan = {"uuid":"none", "trip_plan_name":"none", "user_uuid":"none", "places":placesList};
+        bgGeo.configure(configureSuccessCB,configureErrorCB,tripplan);
+        bgGeo.start(startSuccessCB,startErrorCB);
+        //Trajon Track plugin updating tail
+        
+        
+});
+    
 }
 
 function deletePlaceClicked(placeUUID, tripPlanUUID) {

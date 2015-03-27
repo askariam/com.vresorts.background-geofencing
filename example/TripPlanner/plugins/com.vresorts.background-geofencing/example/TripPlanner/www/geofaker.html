@@ -27,10 +27,15 @@
         <link rel="stylesheet" type="text/css" href="css/bootstrap-min.css" />
         <link rel="stylesheet" type="text/css" href="css/geofaker.css" />
         <title>Geofaker</title>
-        <script type="text/javascript"
+        <!--<script type="text/javascript"
           src="http://maps.google.com/maps/api/js?sensor=true&libraries=geometry">
+        </script>-->        
+        <script type="text/javascript"
+          src="http://maps.googleapis.com/maps/api/js?sensor=true&libraries=geometry">
         </script>
-
+        <!--<script type="text/javascript" src="cordova.js"></script>-->
+        <script type="text/javascript" src="./js/external/jquery-2.1.1.js"></script>
+        <script type="text/javascript" src="./js/geofaker.js"></script>
     </head>
     <body>
         <div id="header" class="header">
@@ -49,9 +54,5 @@
             <button id="btn-mock" class="btn navbar-btn btn-success">Mock</button>
         </nav>
 
-
-        <script type="text/javascript" src="cordova.js"></script>
-        <script type="text/javascript" src="js/jquery-2.1.1.js"></script>
-        <script type="text/javascript" src="js/geofaker.js"></script>
     </body>
 </html>

@@ -51,14 +51,16 @@ public class TripPlan {
 		}
 		return null;
 	}
-	public void removePlace(String uuid) {
+	public Place removePlace(String uuid) {
 		Iterator<Place> iterator = this.places.iterator();
 		while(iterator.hasNext()){
 			Place place = iterator.next();
 			if(place.getUuid().equals(uuid)) {
 				iterator.remove();
+				return place;
 			}
 		}
+		return null;
 		
 	}
 	

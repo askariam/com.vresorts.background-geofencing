@@ -100,7 +100,7 @@ function modifyEntity(data, successCB, errorCB) {
             errorCB();
         }
         else { 
-	        successCB();
+	        successCB(result.entities[0]);
         }
     });    
 }

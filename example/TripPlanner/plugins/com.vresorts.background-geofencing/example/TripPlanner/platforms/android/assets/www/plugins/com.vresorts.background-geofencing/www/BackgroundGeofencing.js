@@ -9,7 +9,7 @@ module.exports = {
           );
     },
     
-    disablePlace: function(succuss, failure, placeUuid){
+    disablePlace: function(success, failure, placeUuid){
     	 exec(success || function() {},
                  failure || function() {},
                  'BackgroundGeofencing',
@@ -18,7 +18,7 @@ module.exports = {
             );
     },
     
-    enablePlace: function(success, failture, placeUuid){
+    enablePlace: function(success, failure, placeUuid){
     	 exec(success || function() {},
                  failure || function() {},
                  'BackgroundGeofencing',
@@ -78,7 +78,14 @@ module.exports = {
             'stop',
             []);
     },
-    
+    setOnNotificationClickedCallback: function(onNotificationClickedCallback){
+  	exec(onNotificationClickedCallback || function() {},
+            function(err) {
+          callback('Nothing to echo.');},
+            'BackgroundGeofencing',
+            'setOnNotificationClickedCallback',
+            []);
+  	},
     mock: function(success, failure, coordinates){
    	 exec(success || function() {},
             failure || function() {},
