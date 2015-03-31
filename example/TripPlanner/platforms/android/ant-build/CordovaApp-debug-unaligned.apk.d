@@ -1,4 +1,4 @@
-/Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/ant-build/CordovaApp-debug-unaligned.apk : \
-/Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/ant-build/CordovaApp.ap_ \
-/Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/ant-build/classes.dex \
-/Users/Carl/Desktop/vresorts/com.vresorts.background-geofencing-master/example/TripPlanner/platforms/android/CordovaLib/ant-build/classes.jar \
+/home/kan/git/com.vresorts.background-geofencing/example/TripPlanner/platforms/android/ant-build/CordovaApp-debug-unaligned.apk : \
+/home/kan/git/com.vresorts.background-geofencing/example/TripPlanner/platforms/android/ant-build/CordovaApp.ap_ \
+/home/kan/git/com.vresorts.background-geofencing/example/TripPlanner/platforms/android/ant-build/classes.dex \
+/home/kan/git/usc_cordova-plugin-background-geolocation/platforms/android/CordovaLib/ant-build/classes.jar \

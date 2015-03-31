@@ -15,7 +15,6 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.BitmapFactory;
 import android.location.LocationManager;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -33,7 +32,160 @@ import com.vresorts.tripplan.R;
 @SuppressLint({ "NewApi", "Instantiatable" })
 public class Geotrigger extends BroadcastReceiver{
 	
-	private TripPlan tripplan;
+	private static class TripPlanManager{
+		
+		private class GeotriggerConfig extends JSONObject{
+			static final String FIELD_TRIP_PLAN = "trip_plan";
+			static final String FIELD_IS_ENABLED = "is_enabled";
+			
+			public GeotriggerConfig(){
+				
+			}
+			
+			public GeotriggerConfig(String data) throws JSONException {
+				super(data);
+			}
+			public boolean isEnabled() {
+				try {
+					return this.getBoolean(FIELD_IS_ENABLED);
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				return false;
+			}
+			public void setEnabled(boolean isEnabled) {
+				try {
+					this.put(FIELD_IS_ENABLED, isEnabled);
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			public TripPlan getTripPlan() {
+				try {
+					JSONObject tripPlanJSONObject = this.getJSONObject(FIELD_TRIP_PLAN);
+
+					TripPlanParser parser = new TripPlanParser(tripPlanJSONObject);
+					
+					return parser.getTripplan();
+					
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				return null;
+				
+			}
+			public void setTripPlan(TripPlan tripPlan) {
+				try {
+					this.put(FIELD_TRIP_PLAN, tripPlan.toJSONObject());
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			}
+			
+		}
+		
+		private Context mContext;
+		
+		private TripPlan tripplan;
+		
+		private boolean isEnabled;
+		
+		public TripPlan getTripplan() {
+			return tripplan;
+		}
+		public void setTripplan(TripPlan tripplan) {
+			this.tripplan = tripplan;
+		}
+		public boolean isEnabled() {
+			return isEnabled;
+		}
+		public void setEnabled(boolean isEnabled) {
+			this.isEnabled = isEnabled;
+		}
+		TripPlanManager(Context context){
+			this.mContext = context;
+			GeotriggerConfig config = this.readFromInternalStorage();
+			if(config != null){
+				this.tripplan = config.getTripPlan();
+				this.isEnabled = config.isEnabled();
+			}
+		}
+		private void writeToInternalStorage(GeotriggerConfig config)
+		{
+
+		Log.v(Config.TAG, "writeToInternalStorage");
+		try{
+		// String endOfLine = System.getProperty("line.separator");
+		File file = new File(mContext.getFilesDir(), CONFIG_FILE);
+		
+		if(file.exists()){
+		file.delete();
+		}
+
+		file.createNewFile();
+
+		// MODE_PRIVATE will create the file (or replace a file of the same name) and make it private to your application. Other modes available are: MODE_APPEND, MODE_WORLD_READABLE, and MODE_WORLD_WRITEABLE.
+		FileOutputStream fos = new FileOutputStream(file, false);
+
+
+		fos.write(config.toString().getBytes());
+
+
+		Log.v(Config.TAG, "writeFileToInternalStorage complete.. "+config.toString());
+		// writer.write(userName);
+
+		fos.close();
+		}
+		catch(Exception e)
+		{
+		Log.v(Config.TAG, "Error: " + e.getMessage());
+		}
+		}
+
+
+		private GeotriggerConfig readFromInternalStorage()
+		{
+
+		Log.v(Config.TAG, "read from internal storage");
+		GeotriggerConfig config = null;
+		try{
+		File file = mContext.getFileStreamPath(CONFIG_FILE);
+		if(file.exists() == true)
+		{
+		Log.v(Config.TAG, "readFileFromInternalStorage File found..."); 
+
+		FileInputStream fis = mContext.openFileInput(file.getName()); 
+		StringBuilder buffer = new StringBuilder(); 
+		int ch;
+		while( (ch = fis.read()) != -1){
+		buffer.append((char)ch);
+		}
+
+		Log.v(Config.TAG, "readFileFromInternalStorage complete.. " + buffer.toString());
+		fis.close();
+		
+		config = new GeotriggerConfig(buffer.toString());
+
+		}
+		}
+		catch(Exception e)
+		{
+		Log.v(Config.TAG, "Error: " + e.getMessage());
+		}
+		return config;
+		}
+		
+
+		public void save(){
+			GeotriggerConfig config = new GeotriggerConfig();
+			config.setEnabled(isEnabled);
+			config.setTripPlan(tripplan);
+			writeToInternalStorage(config);
+		}
+	}
 	
 	private boolean isEnabled = false;
 	
@@ -42,6 +194,10 @@ public class Geotrigger extends BroadcastReceiver{
 	private LocationManager locationManager;
 	
 	private Context context;
+	
+	private TripPlan tripplan;
+	
+	private TripPlanManager tripplanManager;
 	
 	private static final String GEOTRIGGER_ACTION  = "com.vresorts.cordova.bgloc.STATIONARY_REGION_ACTION_TRIGGERED";
 	private static final String GEOTRIGGER_CATEGORY = "com.vresorts.cordova.bgloc.STATIONARY_REGION";
@@ -62,144 +218,18 @@ public class Geotrigger extends BroadcastReceiver{
 //	}
 	
 	
-	
-	private static class GeotriggerConfig extends JSONObject{
-		static final String FIELD_TRIP_PLAN = "trip_plan";
-		static final String FIELD_IS_ENABLED = "is_enabled";
-		
-		public GeotriggerConfig(){
-			
-		}
-		
-		public GeotriggerConfig(String data) throws JSONException {
-			super(data);
-		}
-		public boolean isEnabled() {
-			try {
-				return this.getBoolean(FIELD_IS_ENABLED);
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			return false;
-		}
-		public void setEnabled(boolean isEnabled) {
-			try {
-				this.put(FIELD_IS_ENABLED, isEnabled);
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		public TripPlan getTripPlan() {
-			try {
-				JSONObject tripPlanJSONObject = this.getJSONObject(FIELD_TRIP_PLAN);
-
-				TripPlanParser parser = new TripPlanParser(tripPlanJSONObject);
-				
-				return parser.getTripplan();
-				
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			return null;
-			
-		}
-		public void setTripPlan(TripPlan tripPlan) {
-			try {
-				this.put(FIELD_TRIP_PLAN, tripPlan.toJSONObject());
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		}
-		
-		
-		
-		
-	}
-	
-	public void writeToInternalStorage(GeotriggerConfig config)
-	{
-
-	Log.v(Config.TAG, "writeToInternalStorage");
-	try{
-	// String endOfLine = System.getProperty("line.separator");
-	File file = new File(context.getFilesDir(), CONFIG_FILE);
-	
-	if(file.exists()){
-	file.delete();
-	}
-
-	file.createNewFile();
-
-	// MODE_PRIVATE will create the file (or replace a file of the same name) and make it private to your application. Other modes available are: MODE_APPEND, MODE_WORLD_READABLE, and MODE_WORLD_WRITEABLE.
-	FileOutputStream fos = new FileOutputStream(file, false);
-
-
-	fos.write(config.toString().getBytes());
-
-
-	Log.v(Config.TAG, "writeFileToInternalStorage complete.. "+config.toString());
-	// writer.write(userName);
-
-	fos.close();
-	}
-	catch(Exception e)
-	{
-	Log.v(Config.TAG, "Error: " + e.getMessage());
-	}
-	}
-
-
-	public GeotriggerConfig readFromInternalStorage()
-	{
-
-	Log.v(Config.TAG, "read from internal storage");
-	GeotriggerConfig config = null;
-	try{
-	File file = context.getFileStreamPath(CONFIG_FILE);
-	if(file.exists() == true)
-	{
-	Log.v(Config.TAG, "readFileFromInternalStorage File found..."); 
-
-	FileInputStream fis = context.openFileInput(file.getName()); 
-	StringBuilder buffer = new StringBuilder(); 
-	int ch;
-	while( (ch = fis.read()) != -1){
-	buffer.append((char)ch);
-	}
-
-	Log.v(Config.TAG, "readFileFromInternalStorage complete.. " + buffer.toString());
-	fis.close();
-	
-	config = new GeotriggerConfig(buffer.toString());
-
-	}
-	}
-	catch(Exception e)
-	{
-	Log.v(Config.TAG, "Error: " + e.getMessage());
-	}
-	return config;
-	}
-	
-	
 	public void onPause(){
-		GeotriggerConfig config = new GeotriggerConfig();
-		config.setEnabled(isEnabled);
-		config.setTripPlan(tripplan);
-		this.writeToInternalStorage(config);
+		this.tripplanManager.setEnabled(isEnabled);
+		this.tripplanManager.setTripplan(tripplan);
+		this.tripplanManager.save();
 	}
 	
 	public Geotrigger(Context context){
 		this.context = context;
 	    this.locationManager = (LocationManager) this.context.getSystemService(Context.LOCATION_SERVICE);
-		GeotriggerConfig config = this.readFromInternalStorage();
-		if(config != null){
-			this.tripplan = config.getTripPlan();
-			this.isEnabled = config.isEnabled();
-		}
+		this.tripplanManager = new TripPlanManager(context);
+		this.isEnabled = tripplanManager.isEnabled();
+		this.tripplan = tripplanManager.getTripplan();
 	}
 	
 	public Geotrigger(){
@@ -346,7 +376,7 @@ public class Geotrigger extends BroadcastReceiver{
 			}
 			else{
 				if(place.isSubscribed()){
-				this.registerPlace(place);
+				this.unregisterPlace(place);
 				}
 				return true;
 			}
@@ -428,6 +458,15 @@ public static final String INTENT_EXTRA_FIELD_PLACE = "place";
 	                Log.d(Config.TAG, "- ENTER");
 	                place.timeStamp();
 	                geotriggerListener.onEnter(place, place.getTimeStamp());
+
+	    			// to just enable the notifications once, delete the place from tripplan.
+	                Geotrigger geotrigger = new Geotrigger(context);
+	                if(geotrigger != null){
+	                boolean isDeleted = geotrigger.deletePlace(place.getUuid());
+	                if(isDeleted){
+	                	geotrigger.onPause();
+	                }
+	                }
 	            }
 	            else if (!entering){
 	                Log.d(Config.TAG, "- EXIT");
@@ -481,7 +520,7 @@ public static final String INTENT_EXTRA_FIELD_PLACE = "place";
             
             mNotificationManager.notify((int) System.currentTimeMillis(), builder.build());
             
-			
+            
 			Log.v(Config.TAG, "enter into place :" + place.getPlaceName() + "	at time:" + time);
 		}
 
