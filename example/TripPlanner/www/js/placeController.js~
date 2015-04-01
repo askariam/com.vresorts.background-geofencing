@@ -119,7 +119,7 @@ function loadPlaces(tripPlanUUID) {
 //    readMultiplePlaces("trip_plan_uuid", tripPlanUUID, loadPlacesSuccessCB, loadPlacesErrorCB);
 // 		read data from api.
     // for test
-    //tripPlanUUID = 'a137a68a-be1f-11e4-a532-9192b501077c';
+    tripPlanUUID = 'a137a68a-be1f-11e4-a532-9192b501077c';
     requestTripPlan('http://xixixhalu-test.apigee.net/proxy/tripPlanner/getPlaces?trip_plan_uuid='+tripPlanUUID, function(tripplan){
     	loadPlacesSuccessCB(tripplan.places);
         // Nested function definition for the error callback that goes to readMultiplePlaces()
