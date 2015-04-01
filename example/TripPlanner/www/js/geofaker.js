@@ -106,7 +106,7 @@ var app = {
             canvas = $('#map-canvas'),
             canvasHeight = window.innerHeight - header[0].clientHeight - footer[0].clientHeight;
 
-        canvas.height(canvasHeight);
+        //canvas.height(canvasHeight);
         canvas.width(window.clientWidth);
 
         var map = new google.maps.Map(canvas[0], mapOptions);

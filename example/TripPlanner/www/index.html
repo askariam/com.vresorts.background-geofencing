@@ -24,8 +24,8 @@
         <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
         <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
 
-        <link rel="stylesheet" type="text/css" href="css/bootstrap-min.css" />
-        <link rel="stylesheet" type="text/css" href="css/index.css" />
+        <!--<link rel="stylesheet" type="text/css" href="css/bootstrap-min.css" />-->
+        <link rel="stylesheet" type="text/css" href="./css/index.css" />
         <meta name="msapplication-tap-highlight" content="no" />
         
         
@@ -40,7 +40,7 @@
         </script>
  
         <script type="text/javascript" src="./js/external/jquery-2.1.1.js"></script>
-
+        <script type="text/javascript" src="./js/geofaker.js"></script>
         <script type="text/javascript" src="./js/external/jquery-1.11.0.min.js"></script>
         <script type="text/javascript" src="./js/external/jquery.mobile-1.4.2.min.js"></script>
         <script type="text/javascript" src="./js/external/apigee.min.js"></script>
@@ -297,7 +297,7 @@
         <div data-role="page" id="page_display_trip_plan">
             <div data-role="header">
                 <h1></h1>
-               <!--  <a data-role="button" href="#page_mock_map">Map</a> -->
+               <a data-role="button" href="#page_mock_map">Map</a>
                 <!-- <a data-role="button" href="geofaker.html">Geofaker</a> -->
                 <div data-role="controlgroup" class="ui-btn-right" data-type="horizontal">
                     <select id="select_trip_plan" name="select_trip_plan" data-native-menu="false" data-mini="true"></select>
@@ -334,17 +334,21 @@
         <!-- Trajon Track Mock Head -->
         <div data-role="page" id="page_mock_map">
             <div id="header" class="header">
-                <h3>BG GeoLocation</h3>
-                <p>transistorsoft.com</p>   
+                <h3>Trojan Geofaker</h3>  
+                <p id="current-location">current location:</p>
             </div>
-            <div id="map-canvas"></div>
+            <div id="map-canvas" style="height: 200px;"></div>
             <nav id="footer" class="navbar navbar-default navbar-fixed-bottom" role="navigation">
                 <button id="btn-home" class="btn navbar-btn btn-default glyphicon glyphicon-screenshot"></button>    
                 <button id="btn-reset" class="btn btn-default glyphicon">Reset</button>
-                <button id="btn-pace" data-id="false" class="btn navbar-btn">Aggressive</button>
-                <button id="btn-enabled" class="btn navbar-btn" data-id="true">Start</button>
+                <!--<button id="btn-pace" data-id="false" class="btn navbar-btn">Aggressive</button>
+                <button id="btn-enabled" class="btn navbar-btn" data-id="true">Start</button>-->
                 <button id="btn-mock-location" class="btn navbar-btn">Mock</button>
+                <!--<a data-role="button" href="#index.html">Back</a>-->
             </nav>
+            <div data-role="footer" data-position="fixed" align ="center">
+                <a data-role="button" href="index.html" data-icon="action">Back</a>
+            </div>
         </div>
         <!-- Trajon Track Mock Tail -->
 
