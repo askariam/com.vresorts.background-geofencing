@@ -199,12 +199,12 @@ public class Geotrigger extends BroadcastReceiver{
 	
 	private TripPlanManager tripplanManager;
 	
-	private static final String GEOTRIGGER_ACTION  = "com.vresorts.cordova.bgloc.STATIONARY_REGION_ACTION_TRIGGERED";
-	private static final String GEOTRIGGER_CATEGORY = "com.vresorts.cordova.bgloc.STATIONARY_REGION";
+	private static final String INTENT_ACTION_GEOTRIGGER  = "com.vresorts.cordova.bgloc.STATIONARY_REGION_ACTION_TRIGGERED";
+	private static final String INTENT_CATEGORY_GEOTRIGGER = "com.vresorts.cordova.bgloc.STATIONARY_REGION";
 	
 	
-	private static final String GEOTRIGGER_DATA_HOST = "bgloc.cordova.vresorts.com";
-	private static final String GEOTRIGGER_DATA_SCHEME = "geotrigger";
+	private static final String INTENT_HOST_GEOTRIGGER = "bgloc.cordova.vresorts.com";
+	private static final String INTENT_DATA_SCHEME_GEOTRIGGER = "geotrigger";
 	
 	private static final String CONFIG_FILE = "com.vresorts.cordova.bgloc.CONFIG_FILE";
 	
@@ -279,11 +279,11 @@ public class Geotrigger extends BroadcastReceiver{
 			return null;
 		}
 		
-		Intent intent = new Intent(GEOTRIGGER_ACTION);
-		intent.addCategory(GEOTRIGGER_CATEGORY);
+		Intent intent = new Intent(INTENT_ACTION_GEOTRIGGER);
+		intent.addCategory(INTENT_CATEGORY_GEOTRIGGER);
 		Uri.Builder builder = new Uri.Builder();
-		builder.scheme(GEOTRIGGER_DATA_SCHEME);
-		builder.authority(GEOTRIGGER_DATA_HOST);
+		builder.scheme(INTENT_DATA_SCHEME_GEOTRIGGER);
+		builder.authority(INTENT_HOST_GEOTRIGGER);
 		builder.appendQueryParameter("placeUuid", place.getUuid());
 		intent.setData(builder.build());
 		
@@ -485,8 +485,18 @@ public static final String INTENT_EXTRA_FIELD_PLACE = "place";
 		public void onEnter(Place place, long time);
 		public void onExit(Place place, long time, long duration);
 	}
+	
     
-    private static class GeotriggerListener implements IGeotriggerListener{
+    public static class GeotriggerListener implements IGeotriggerListener{
+    	
+        public static final String INTENT_EXTRA_KEY_NOTIFICATION_OFFER_DATA = "com.vresorts.cordova.bgloc.NOTIFICATION_OFFER_DATA";
+    	private static final String INTENT_ACTION_OFFER_NOTIFICATION  = "com.vresorts.cordova.bgloc.OFFER_NOTIFICATION_RECEIVED";
+//    	private static final String INTENT_CATEGORY_OFFER_NOTIFICATION = "com.vresorts.cordova.bgloc.OFFER_NOTIFICATION";
+    	
+    	
+    	private static final String INTENT_HOST_OFFER_NOTIFICATION = "bgloc.cordova.vresorts.com";
+    	private static final String INTENT_DATA_SCHEME_OFFER_NOTIFICATION = "offerNotification";
+    	
     	Context activity;
     	GeotriggerListener(Context context){
     		activity = context;
@@ -501,14 +511,20 @@ public static final String INTENT_EXTRA_FIELD_PLACE = "place";
 				offerData.put("offerUuid", place.getOfferUuid());
 				offerData.put("placeName", place.getPlaceName());
 			} catch (JSONException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			
-			Intent main = new Intent(activity, CordovaApp.class);
-			main.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			main.putExtra(BackgroundGeofencingPlugin.INTENT_EXTRA_KEY_NOTIFICATION_OFFER_DATA, offerData.toString());
-            PendingIntent pendingIntent = PendingIntent.getActivity(activity, 0, main,  PendingIntent.FLAG_UPDATE_CURRENT);
+			Intent intent = new Intent(activity, CordovaApp.class);
+//			intent.addCategory(INTENT_CATEGORY_OFFER_NOTIFICATION);
+			Uri.Builder uriBuilder = new Uri.Builder();
+			uriBuilder.scheme(INTENT_DATA_SCHEME_OFFER_NOTIFICATION);
+			uriBuilder.authority(INTENT_HOST_OFFER_NOTIFICATION);
+			uriBuilder.appendQueryParameter("placeUuid", place.getUuid());
+			intent.setData(uriBuilder.build());
+			intent.putExtra(INTENT_EXTRA_KEY_NOTIFICATION_OFFER_DATA, offerData.toString());
+			intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			
+            PendingIntent pendingIntent = PendingIntent.getActivity(activity, 0, intent,  PendingIntent.FLAG_CANCEL_CURRENT);
 
             Notification.Builder builder = new Notification.Builder(activity);
             builder.setContentTitle(place.getPlaceName()+"has a new offer");
