@@ -12,17 +12,14 @@
 
 @property (nonatomic, strong) NSString* syncCallbackId;
 @property (nonatomic, strong) NSMutableArray* stationaryRegionListeners;
-
+@property (nonatomic, strong) NSMutableData *responseData;
+@property (nonatomic, strong) NSDate *enterTime;
 - (void) configure:(CDVInvokedUrlCommand*)command;
 - (void) start:(CDVInvokedUrlCommand*)command;
 - (void) stop:(CDVInvokedUrlCommand*)command;
-- (void) finish:(CDVInvokedUrlCommand*)command;
-- (void) onPaceChange:(CDVInvokedUrlCommand*)command;
-- (void) setConfig:(CDVInvokedUrlCommand*)command;
-- (void) addStationaryRegionListener:(CDVInvokedUrlCommand*)command;
-- (void) getStationaryLocation:(CDVInvokedUrlCommand *)command;
-- (void) onSuspend:(NSNotification *)notification;
-- (void) onResume:(NSNotification *)notification;
+- (void) addplace:(CDVInvokedUrlCommand*)command;
+- (void) disableplace:(CDVInvokedUrlCommand*)command;
+- (void) getCurrentLocation:(CDVInvokedUrlCommand *)command;
 - (void) onAppTerminate;
 
 @end
