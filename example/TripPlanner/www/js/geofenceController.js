@@ -43,7 +43,7 @@ function passwordClicked(uuid, place_name) {
             })
     });
     
-    $.getJSON("http://xixixhalu-test.apigee.net/proxy/tripPlanner/getOffer?offer_uuid="+ window.globalID.offeruuid, function(offer){
+    $.getJSON("http://xixixhalu-test.apigee.net/proxy/tripPlanner/getOffer2?offer_uuid="+ window.globalID.offeruuid, function(offer){
               redeemPassword = offer.redeem_password;
               partnerUUID = offer.partner_uuid;
               couponIMAGE = offer.coupon.image_data;
