@@ -1,7 +1,7 @@
+////
+//  CDVBackgroundGeoLocation
 //
-//  CDVBackgroundGeoLocation.h
-//
-//  Created by Chris Scott <chris@transistorsoft.com>
+//  Created by Chein-Hsing Lu <dreadlord1110@gmail.com> on 2015-04-06
 //
 
 #import <Cordova/CDVPlugin.h>
@@ -9,9 +9,9 @@
 #import <AudioToolbox/AudioToolbox.h>
 
 @interface CDVBackgroundGeofencing : CDVPlugin <CLLocationManagerDelegate>
-
+@property (nonatomic, strong) CLLocationManager* locationManager;
+@property (strong, nonatomic) NSMutableArray *geofences;
 @property (nonatomic, strong) NSString* syncCallbackId;
-@property (nonatomic, strong) NSMutableArray* stationaryRegionListeners;
 @property (nonatomic, strong) NSMutableDictionary *place_name_map;
 @property (nonatomic, strong) NSMutableDictionary *offer_uuid_map;
 @property (nonatomic, strong) NSMutableDictionary *lat_map;
@@ -29,7 +29,7 @@
 - (void) disablePlace:(CDVInvokedUrlCommand*)command;
 - (void) getCurrentLocation:(CDVInvokedUrlCommand *)command;
 - (void) setOnNotificationClickedCallback:(CDVInvokedUrlCommand *)command;
-
+- (NSNumber*)calculateDistanceInMetersBetweenCoord:(CLLocationCoordinate2D)coord1 coord:(CLLocationCoordinate2D)coord2;
 - (void) onAppTerminate;
 - (void) didReceiveLocalNotification:(NSNotification *)notification;
 -(void) setupcallbacknotification:(NSString*)message;

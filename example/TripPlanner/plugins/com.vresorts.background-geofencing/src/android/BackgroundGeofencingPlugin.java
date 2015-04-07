@@ -46,13 +46,13 @@ public class BackgroundGeofencingPlugin extends CordovaPlugin {
     public static final String ACTION_MOCK_START = "startMock";
     public static final String ACTION_MOCK_STOP = "stopMock";
     
-    public static final String INTENT_EXTRA_KEY_NOTIFICATION_OFFER_DATA = "com.vresorts.cordova.bgloc.NOTIFICATION_OFFER_DATA";
-    
     private Geofaker geoFaker;
     
     private Geotrigger geotrigger;
     
     Activity activity;
+    
+
     
     @Override
 	protected void pluginInitialize() {
@@ -71,7 +71,7 @@ public class BackgroundGeofencingPlugin extends CordovaPlugin {
 	public void onNewIntent(Intent intent) {
 		super.onNewIntent(intent);
 		String offerData = null;
-		if(intent != null && (offerData = intent.getStringExtra(INTENT_EXTRA_KEY_NOTIFICATION_OFFER_DATA)) != null){
+		if(intent != null && (offerData = intent.getStringExtra("com.vresorts.cordova.bgloc.NOTIFICATION_OFFER_DATA")) != null){
 			this.performNotificationClicked(offerData);
 		}
 	}

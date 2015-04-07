@@ -1,33 +1,22 @@
 ////
 //  CDVBackgroundGeoLocation
 //
-//  Created by Chris Scott <chris@transistorsoft.com> on 2013-06-15
+//  Created by Chein-Hsing Lu <dreadlord1110@gmail.com> on 2015-04-06
 //
-#import "CDVLocation.h"
+
 #import "CDVBackgroundGeofencing.h"
 #import <Cordova/CDVJSON.h>
 
 // Debug sounds for bg-geolocation life-cycle events.
 // http://iphonedevwiki.net/index.php/AudioServices
-#define exitRegionSound         1005
-#define locationSyncSound       1004
-#define paceChangeYesSound      1110
-#define paceChangeNoSound       1112
-#define acquiringLocationSound  1103
-#define acquiredLocationSound   1052
-#define locationErrorSound      1073
 #define msgreceived            1307
 
 
 @implementation CDVBackgroundGeofencing {
     
-    BOOL isUpdatingLocation;
-    
     UIBackgroundTaskIdentifier bgTask;
     NSDate *lastBgTaskAt;
-    
     NSError *locationError;
-    CLLocationManager *locationManager;
     UILocalNotification *localNotification;
     
     CDVLocationData *locationData;
@@ -43,9 +32,9 @@
     NSMutableDictionary *notification_map;
     NSString *callback_id;
 }
-
+@synthesize geofences;
+@synthesize locationManager;
 @synthesize syncCallbackId;
-@synthesize stationaryRegionListeners;
 @synthesize enterTime;
 @synthesize offer_uuid_map = offer_uuid_map;
 @synthesize lat_map = lat_map;
@@ -55,20 +44,40 @@
 @synthesize notification_map = notification_map;
 - (void)pluginInitialize
 {
+    [self locationManagerSetup];
+    
     [super pluginInitialize];
-    locationManager = [[CLLocationManager alloc] init];
-    locationManager.delegate = self;
-    locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters;
-    [locationManager requestAlwaysAuthorization];
-    [locationManager requestWhenInUseAuthorization];
-    localNotification = [[UILocalNotification alloc] init];
-    localNotification.timeZone = [NSTimeZone defaultTimeZone];
-    
-    isUpdatingLocation = NO;
-    
     
     bgTask = UIBackgroundTaskInvalid;
     
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onSuspend:) name:UIApplicationDidEnterBackgroundNotification object:nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onResume:) name:UIApplicationWillEnterForegroundNotification object:nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onPause:) name:UIApplicationWillEnterForegroundNotification object:nil];
+}
+
+-(void)locationManagerSetup
+{
+    if(!self.locationManager) self.locationManager = [[CLLocationManager alloc] init];
+    self.locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters;
+    self.locationManager.distanceFilter = 10; // meters
+    self.locationManager.delegate = self;
+    [self.locationManager requestAlwaysAuthorization];
+    [self.locationManager requestWhenInUseAuthorization];
+    
+    geofences = [NSMutableArray arrayWithArray:[[self.locationManager monitoredRegions] allObjects]];
+    
+    NSString *version = [[UIDevice currentDevice] systemVersion];
+    if ([version floatValue] >= 8.0f) //for iOS8
+    {
+        if ([self.locationManager respondsToSelector:@selector(requestAlwaysAuthorization)]) {
+            [self.locationManager requestAlwaysAuthorization];
+        }
+    }
+    
+    localNotification = [[UILocalNotification alloc] init];
+    localNotification.timeZone = [NSTimeZone defaultTimeZone];
 }
 
 - (void) configure:(CDVInvokedUrlCommand*)command
@@ -79,6 +88,7 @@
     self.lon_map = [NSMutableDictionary dictionaryWithCapacity:100];
     self.radius_map = [NSMutableDictionary dictionaryWithCapacity:100];
     self.notification_map = [NSMutableDictionary dictionaryWithCapacity:100];
+    
     //fetch json and add them into geofence data
     NSArray *array = [command arguments];
     NSDictionary *result = [array objectAtIndex:0];
@@ -96,32 +106,31 @@
         NSNumber *radius = [geofence objectForKey:@"radius"];
         NSString *offer_uuid = [geofence objectForKey:@"offer_uuid"];
         CLLocationCoordinate2D coord;
-        coord.longitude = (CLLocationDegrees)[latitude doubleValue];
-        coord.latitude = (CLLocationDegrees)[longitude doubleValue];
+        coord.longitude = (CLLocationDegrees)[longitude doubleValue];
+        coord.latitude = (CLLocationDegrees)[latitude doubleValue];
         //add the place information in map for later use
         //such as ufferuuid, raduis, lat_lon...
-        [place_name_map setObject:name forKey:uuid];
-        [offer_uuid_map setObject:offer_uuid forKey:uuid];
-        [lat_map setObject:latitude forKey:uuid];
-        [lon_map setObject:longitude forKey:uuid];
-        [raduis_map setObject:radius forKey:uuid];
+        if(uuid !=nil)
+        {
+            [place_name_map setObject:name forKey:uuid];
+            [offer_uuid_map setObject:offer_uuid forKey:uuid];
+            [lat_map setObject:latitude forKey:uuid];
+            [lon_map setObject:longitude forKey:uuid];
+            [raduis_map setObject:radius forKey:uuid];
+            
+            if ([is_subscribed containsString:@"true"])
+            {
+                [self addPlace:coord name:uuid radius:radius];
+            }
+            else
+            {
+                [self disablePlace:coord name:uuid radius:radius];
+            }
+        }
         
-        if ([is_subscribed containsString:@"true"])
-        {
-            [self addPlace:coord name:uuid radius:radius];
-        }
-        else
-        {
-            [self disablePlace:coord name:uuid radius:radius];
-        }
     }
-
-    self.syncCallbackId = command.callbackId;
     
-    locationManager.activityType = activityType;
-    locationManager.pausesLocationUpdatesAutomatically = YES;
-    locationManager.distanceFilter = 10; // meters
-    locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters;//can be changed later
+    self.syncCallbackId = command.callbackId;
     
     // ios 8 requires permissions to send local-notifications
     
@@ -130,9 +139,6 @@
     {
         [app registerUserNotificationSettings:[UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeAlert|UIUserNotificationTypeBadge|UIUserNotificationTypeSound categories:nil]];
     }
-    
-
-
 }
 
 
@@ -173,9 +179,9 @@
     NSString *name = key;
     NSNumber *radius = [raduis_map objectForKey:key];
     CLLocationCoordinate2D coor = CLLocationCoordinate2DMake(lattitude, longitude);
-
+    
     [self addPlace:coor name:name radius:radius];
-    [self notify:name];
+    //[self notify:name];
     CDVPluginResult* result = nil;
     result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
@@ -236,23 +242,27 @@
 {
     callback_id = command.callbackId;
     //NSLog(@"Notification callback is set");
-//    
-//    
-//    CDVPluginResult* result = nil;
-//    result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-//    [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
-
+    //
+    //
+    //    CDVPluginResult* result = nil;
+    //    result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    //    [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
+    
 }
 
 
 /**********************************************/
+-(void) locationManager:(CLLocationManager *)manager didStartMonitoringForRegion:(CLRegion *)region
+{
+    
+}
+
 
 - (void) didReceiveLocalNotification:(NSNotification *)notification
 {
-
+    
     NSString *key = [self regularexpforkey:notification];
     NSString *message = [notification_map objectForKey:key];
-    
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:message];
     [pluginResult setKeepCallbackAsBool:YES]; // here we tell Cordova not to cleanup the callback id after sendPluginResult()
     [self.commandDelegate sendPluginResult:pluginResult callbackId:callback_id];
@@ -301,22 +311,26 @@
 -(void) addPlace:(CLLocationCoordinate2D) coordinate
             name:(NSString *)name radius:(NSNumber *) radius{
     
-    CLCircularRegion *region = [[CLCircularRegion alloc] initWithCenter:coordinate radius:[radius doubleValue] identifier:name];
-    [locationManager startMonitoringForRegion:region];
+    CLRegion *region = [[CLRegion alloc]initCircularRegionWithCenter:coordinate radius:[radius doubleValue] identifier:name];
+    NSLog(@"lat is %f and lon is %f and radius is %@ and name is %@",coordinate.latitude,coordinate.longitude,radius,name);
+    [self.locationManager startMonitoringForRegion:region];
+    
+    //if([[self.locationManager monitoredRegions] count]<1)NSLog(@"No Monitored added!!!");
+    
     //[self notify: name];
 }
 
 -(void) disablePlace:(CLLocationCoordinate2D) coordinate
                 name:(NSString *)name radius:(NSNumber *) radius{
     CLCircularRegion *region = [[CLCircularRegion alloc] initWithCenter:coordinate radius:[radius doubleValue] identifier:name];
-    [locationManager stopMonitoringForRegion:region];
+    [self.locationManager stopMonitoringForRegion:region];
     //[self notify:[NSString stringWithFormat:@"Place %@ is deleted from monitoring",name]];
 }
 
--(void) locationManager:(CLLocationManager *)manager didEnterRegion:(CLRegion *)region{
+-(void) locationManager:(CLLocationManager *)manager didEnterRegion:(CLRegion *)region
+{
     //AudioServicesPlaySystemSound (exitRegionSound);
-    NSString *name = [place_name_map objectForKey:region.identifier];
-    [self notify:[NSString stringWithFormat:@"%@",name]];
+    [self notify:region.identifier];
     enterTime = [NSDate date];
 }
 
@@ -329,30 +343,64 @@
     //[self notify:[NSString stringWithFormat:@"Leaves %@, stays for %f",name,stayingTime]];
 }
 
-/**** Handle Connection to fetch json data *****/
-//
-//- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response {
-//    NSLog(@"didReceiveResponse");
-//    [self.responseData setLength:0];
-//}
-//
-//- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {
-//    [self.responseData appendData:data];
-//}
-//
-//- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error {
-//    NSLog(@"didFailWithError");
-//    NSLog([NSString stringWithFormat:@"Connection failed: %@", [error description]]);
-//}
-
 
 /**********************************************/
+
+- (NSNumber*)calculateDistanceInMetersBetweenCoord:(CLLocationCoordinate2D)coord1 coord:(CLLocationCoordinate2D)coord2 {
+    NSInteger nRadius = 6371; // Earth's radius in Kilometers
+    double latDiff = (coord2.latitude - coord1.latitude) * (M_PI/180);
+    double lonDiff = (coord2.longitude - coord1.longitude) * (M_PI/180);
+    double lat1InRadians = coord1.latitude * (M_PI/180);
+    double lat2InRadians = coord2.latitude * (M_PI/180);
+    double nA = pow ( sin(latDiff/2), 2 ) + cos(lat1InRadians) * cos(lat2InRadians) * pow ( sin(lonDiff/2), 2 );
+    double nC = 2 * atan2( sqrt(nA), sqrt( 1 - nA ));
+    double nD = nRadius * nC;
+    // convert to meters
+    return @(nD*1000);
+}
 
 -(void) locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations
 {
     lastLocation = [locations lastObject];
-    //NSLog(@"User Location Updated: @%", lastLocation);
+    
+    BOOL static first_time = TRUE;
+    if(first_time)//enter if user is already in the monitored region, then enter didEnterMonitoredRegion manually once
+    {
+        first_time = FALSE;
+        NSSet *monitoredRegions = self.locationManager.monitoredRegions;
+        
+        if(monitoredRegions)
+        {
+            [monitoredRegions enumerateObjectsUsingBlock:^(CLRegion *region,BOOL *stop)
+             {
+                 CLLocationCoordinate2D centerCoords =region.center;
+                 CLLocationCoordinate2D currentCoords= CLLocationCoordinate2DMake(lastLocation.coordinate.latitude,lastLocation.coordinate.longitude);
+                 CLLocationDistance radius = region.radius;
+                 
+                 NSNumber * currentLocationDistance =[self calculateDistanceInMetersBetweenCoord:currentCoords coord:centerCoords];
+                 if([currentLocationDistance floatValue] < radius)
+                 {
+                     //stop Monitoring Region temporarily
+                     [self.locationManager stopMonitoringForRegion:region];
+                     
+                     [self locationManager:locationManager didEnterRegion:region];
+                     //start Monitoing Region again.
+                     [self.locationManager startMonitoringForRegion:region];
+                 }
+             }];
+        }
+    }
 }
+
+- (void)locationManager:(CLLocationManager *)manager monitoringDidFailForRegion:(CLRegion *)region
+              withError:(NSError *)error
+{
+    NSLog(@"Monitored regions are %lu",(unsigned long)[[self.locationManager monitoredRegions]count]);
+    NSLog(@"Encounter error when start monitoring for region %@",region.identifier);
+    NSLog(@"%@ happens.",error.description);
+}
+
+
 
 - (void)locationManager:(CLLocationManager *)manager didFailWithError:(NSError *)error
 {
@@ -383,14 +431,12 @@
 
 - (void) stopUpdatingLocation
 {
-    [locationManager stopUpdatingLocation];
-    isUpdatingLocation = NO;
+    [self.locationManager stopUpdatingLocation];
 }
 
 - (void) startUpdatingLocation
 {
-    [locationManager startUpdatingLocation];
-    isUpdatingLocation = YES;
+    [self.locationManager startUpdatingLocation];
 }
 
 - (NSTimeInterval) locationAge:(CLLocation*)location
@@ -401,10 +447,11 @@
 - (void) notify:(NSString*)message
 {
     localNotification.fireDate = [NSDate date];
-    AudioServicesPlaySystemSound(msgreceived);
+    
     NSString *name = [place_name_map objectForKey:message];
-    localNotification.alertTitle = [NSString stringWithFormat:@"You just got an offer from %@",name];
-    localNotification.alertBody = @"Click to see more detail!";
+    localNotification.alertBody = [NSString stringWithFormat:@"You just got an offer from %@ !",name];
+    AudioServicesPlaySystemSound(msgreceived);
+    //localNotification.alertBody = @"Click to see more detail!";
     [[UIApplication sharedApplication] scheduleLocalNotification:localNotification];
     [self setupcallbacknotification:message];
 }
@@ -422,7 +469,7 @@
     NSDateFormatter *dateformater = [[NSDateFormatter alloc]init];
     [dateformater setDateFormat:@"mmss"];
     NSString *stringDate = [dateformater stringFromDate:[NSDate date]];
-    NSLog(@"date is %@",stringDate);
+    //NSLog(@"date is %@",stringDate);
     
     [notification_map setObject:json_result forKey:stringDate];
 }
@@ -431,16 +478,57 @@
  * new location arrives, essentially monitoring the user's location even when they've killed the app.
  * Might be desirable in certain apps.
  */
-- (void)applicationWillTerminate:(UIApplication *)application {
-    [locationManager stopMonitoringSignificantLocationChanges];
-    [locationManager stopUpdatingLocation];
-    
+- (void)applicationWillTerminate:(UIApplication *)application
+{
+    [self.locationManager stopUpdatingLocation];
 }
 
 - (void)dealloc
 {
-    locationManager.delegate = nil;
+    self.locationManager.delegate = nil;
 }
+
+-(UIBackgroundTaskIdentifier) createBackgroundTask
+{
+    lastBgTaskAt = [NSDate date];
+    return [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
+        [self stopBackgroundTask];
+    }];
+}
+
+- (void) stopBackgroundTask
+{
+    UIApplication *app = [UIApplication sharedApplication];
+    NSLog(@"- CDVBackgroundGeoLocation stopBackgroundTask (remaining t: %f)", app.backgroundTimeRemaining);
+    if (bgTask != UIBackgroundTaskInvalid)
+    {
+        [app endBackgroundTask:bgTask];
+        bgTask = UIBackgroundTaskInvalid;
+    }
+}
+
+
+
+///**
+// * Suspend.  Turn on passive location services
+// */
+-(void) onSuspend:(NSNotification *) notification
+{
+    NSLog(@"- CDVBackgroundGeoLocation suspend");
+}
+///**@
+// * Resume
+// */
+-(void) onResume:(NSNotification *) notification
+{
+    NSLog(@"- CDVBackgroundGeoLocation resume");
+}
+
+-(void) onPause:(NSNotification *) notification
+{
+    NSLog(@"- CDVBackgroundGeoLocation onpause");
+}
+
 
 - (void) onAppTerminate
 {
