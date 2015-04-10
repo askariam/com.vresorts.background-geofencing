@@ -32,5 +32,4 @@
 - (NSNumber*)calculateDistanceInMetersBetweenCoord:(CLLocationCoordinate2D)coord1 coord:(CLLocationCoordinate2D)coord2;
 - (void) onAppTerminate;
 - (void) didReceiveLocalNotification:(NSNotification *)notification;
-//- (NSString*) regularexpforkey:(NSNotification *)notification;
 @end
