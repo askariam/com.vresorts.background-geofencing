@@ -295,32 +295,6 @@
     
 }
 
-//- (NSString*) regularexpforkey:(NSNotification *)notification
-//{
-//    NSLog(@"%@",notification.description);
-//    NSString *datestring = (NSString *)notification.description;
-//    NSRange start_date;
-//    NSRange end_date;
-//    //NSLog(@"datestring is = %@", datestring);
-//    //capture the string part of date
-//    //NSLog(@"datestring is =%@",datestring);
-//    start_date = [datestring rangeOfString:@" at "];
-//    end_date = [datestring rangeOfString:@", time zone"];
-//    NSRange new_range;
-//    new_range.length = end_date.location-start_date.location;
-//    new_range.location = start_date.location;
-//    NSString *key = [datestring substringWithRange:new_range];
-//    //NSLog(@"key is = %@", key);
-//    key = [key substringFromIndex:6];
-//    //NSLog(@"key is = %@", key);
-//    //strip all other character except digits
-//    NSString *newString = [[key componentsSeparatedByCharactersInSet:
-//                            [[NSCharacterSet decimalDigitCharacterSet] invertedSet]]
-//                           componentsJoinedByString:@""];
-//    //NSLog(@"%@",newString);
-//    return newString;
-//}
-
 
 
 -(NSMutableDictionary*) locationToHash:(CLLocation*)location
