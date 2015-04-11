@@ -14,21 +14,11 @@ $(document).ready(function() {
                   });
 
 function passwordClicked(uuid, place_name) {
-    $("#div_password").empty();
+    $("#div_password_name").empty();
+    $("#div_password_info").empty();
     window.globalID.offeruuid = uuid;
-    $("#div_password").append(
-                              "<h4 align='center'>"
-                              +place_name
-                              +"</h4>"
-                              +"<p>Please have a store employee enter the password to redeem your coupon!</p>"
-                              + "<label align='left'>Partner code </label>"
-                              + "<input type='password' name='password' id='offer_password' value='' placeholder='password' align='left'><br><br>"
-                              + "<button type='button' style='background-color:#EEEEEE; border-style:solid; border-color:#CCCCCC'; "
-                              + "onclick=\x22passwordCheck();\x22>Get Coupon</button>"
-                              + "<button type='button' style='background-color:#EEEEEE; border-style:solid; border-color:#CCCCCC'; "
-                              + "onclick=\x22$('#popup_password').popup('close');\x22>Close</button>"
-                              + "</div>"
-                              );
+    $("#div_password_name").append("<h2>"+place_name+"</h2>");
+    $("#div_password_info").append("<input type='password' name='password' id='offer_password' value='' placeholder='password'>");
     $("#popup_password").popup("open");
     
     //Performance note: call on local data will be faster --> wating for improvement

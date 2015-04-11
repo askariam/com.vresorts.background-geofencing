@@ -56,18 +56,18 @@ function loadPlaces(tripPlanUUID) {
                     + place.uuid
                     + "\x27);\x22"
                     + "name='switch-" + place.uuid + "' "
-                    + "id='switch-" + place.uuid + "' data-role='slider' data-mini='true'>"
+                    + "id='switch-" + place.uuid + "' data-role='slider' data-mini='true' style='margin:15px;'>"
                     + "<option value='off'>Off</option>"
                     + "<option value='on'>On</option></select>";
              
             //***Button for coupon and barcode testing
                 var testButton =
                     "<a href='#' data-role='button' data-mini='true' style='width:40px;' "
-                    + "onclick=\x22addNotification(\x27"
+                    + "onclick=\x22passwordClicked(\x27"
                     + place.offer_uuid
                     + "\x27,\x27"
                     + place.place_name
-                    + "\x27);\x22>test</a>";
+                    + "\x27);\x22>Test</a>";
 //                var subscribedCheckboxHTML =
 //                    "<input onchange=\x22togglePlaceSubscription(\x27"
 //                    + place.uuid
@@ -98,7 +98,7 @@ function loadPlaces(tripPlanUUID) {
                 + "<a href='" + place.info_url + "'target='_blank' data-role='button' data-mini='true'  style='width:40px;'>Info</a>"
                 + offerDetail
                 + testButton
-                + "&nbsp;&nbsp;"
+                //+ "&nbsp;&nbsp;"
 //                + subscribedCheckboxHTML
                 + switchHTML
                 

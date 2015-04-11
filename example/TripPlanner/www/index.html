@@ -412,12 +412,15 @@
                 <div id="div_coupon_barcode" style=" position:absolute; top: 65%; left:29%;"></div>
                 <a data-role="button" data-rel="back" href="#" data-icon="back">Go Back</a>
             </div>
+        </div>
 
-       <div data-role="popup" id="popup_password" class="ui-corner-all">
-           <div style="width:100%; padding:5px 5px;background-color:white;" class="ui-corner-all" align="center" id="div_password">
-           </div>
-           <div id="div_password_message"></div>
-           </div>
+        <div data-role="popup" id="popup_password" class="ui-corner-all"style="background-color:white;" >
+            <div data-role="header" id="div_password_name"></div>
+            <p>Please have a store employee enter the password to redeem your coupon!</p>
+            <p>Partner code </p>
+            <div id="div_password_info"></div>
+            <button align="left" onclick="passwordCheck();">Get Coupon</button>
+            <button align="right" onclick="$('#popup_password').popup('close');">Close</button>
         </div>
     </body>
     
