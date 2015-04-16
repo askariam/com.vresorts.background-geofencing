@@ -70,8 +70,8 @@
 -(void)locationManagerSetup
 {
     if(!self.locationManager) self.locationManager = [[CLLocationManager alloc] init];
-    self.locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters;
-    self.locationManager.distanceFilter = 10; // meters
+    self.locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters;
+    self.locationManager.distanceFilter = 50; // meters
     self.locationManager.delegate = self;
     
     geofences = [NSMutableArray arrayWithArray:[[self.locationManager monitoredRegions] allObjects]];
@@ -297,6 +297,34 @@
 
 
 
+//- (NSString*) regularexpforkey:(NSNotification *)notification
+//{
+//    NSLog(@"%@",notification.description);
+//    NSString *datestring = (NSString *)notification.description;
+//    NSRange start_date;
+//    NSRange end_date;
+//    //NSLog(@"datestring is = %@", datestring);
+//    //capture the string part of date
+//    //NSLog(@"datestring is =%@",datestring);
+//    start_date = [datestring rangeOfString:@" at "];
+//    end_date = [datestring rangeOfString:@", time zone"];
+//    NSRange new_range;
+//    new_range.length = end_date.location-start_date.location;
+//    new_range.location = start_date.location;
+//    NSString *key = [datestring substringWithRange:new_range];
+//    //NSLog(@"key is = %@", key);
+//    key = [key substringFromIndex:6];
+//    //NSLog(@"key is = %@", key);
+//    //strip all other character except digits
+//    NSString *newString = [[key componentsSeparatedByCharactersInSet:
+//                            [[NSCharacterSet decimalDigitCharacterSet] invertedSet]]
+//                           componentsJoinedByString:@""];
+//    //NSLog(@"%@",newString);
+//    return newString;
+//}
+
+
+
 -(NSMutableDictionary*) locationToHash:(CLLocation*)location
 {
     NSMutableDictionary *returnInfo;
@@ -331,16 +359,19 @@
 {
     //AudioServicesPlaySystemSound (exitRegionSound);
     [self notify:region.identifier];
-    enterTime = [NSDate date];
+    //enterTime = [NSDate date];
+    
+    [self disablePlace:[region center] name:[region identifier] radius:[NSNumber numberWithDouble:[region radius]]];
 }
 
 - (void)locationManager:(CLLocationManager *)manager didExitRegion:(CLRegion *)region
 {
     //NSLog(@"- CDVBackgroundGeoLocation exit region");
-    NSDate *leaveTime = [NSDate date];
+    //NSDate *leaveTime = [NSDate date];
     //NSString *name = [place_name_map objectForKey:region.identifier];
-    NSTimeInterval stayingTime = [leaveTime timeIntervalSinceDate:enterTime];
+    //NSTimeInterval stayingTime = [leaveTime timeIntervalSinceDate:enterTime];
     //[self notify:[NSString stringWithFormat:@"Leaves %@, stays for %f",name,stayingTime]];
+    //[self.locationManager st]
 }
 
 
