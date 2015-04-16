@@ -18,9 +18,8 @@ function passwordClicked(uuid, place_name) {
     $("#div_password_info").empty();
     window.globalID.offeruuid = uuid;
     $("#div_password_name").append("<h2>"+place_name+"</h2>");
-    $("#div_password_info").append("<input type='password' name='password' id='offer_password' value='' placeholder='password'>");
+    $("#div_password_info").append("<input type='password' pattern='[0-9]*' inputmode='numeric' name='password' id='offer_password' value='' placeholder='PASSWORD'>");
     $("#popup_password").popup("open");
-    
     //Performance note: call on local data will be faster --> wating for improvement
     $.getJSON("http://xixixhalu-test.apigee.net/proxy/tripPlanner/getPlaces?trip_plan_uuid=" + window.globalID.tripPlanuuid, function(tripplan){
               $.each(tripplan.places, function(i, item){
