@@ -15,6 +15,8 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.location.Criteria;
+import android.location.Location;
 import android.location.LocationManager;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -199,9 +201,11 @@ public class Geotrigger extends BroadcastReceiver{
 	
 	private TripPlanManager tripplanManager;
 	
-	private static final String INTENT_ACTION_GEOTRIGGER  = "com.vresorts.cordova.bgloc.STATIONARY_REGION_ACTION_TRIGGERED";
+	private static final String INTENT_ACTION_GEOTRIGGER_STATIONARY_PROXIMITY_ALERT  = "com.vresorts.cordova.bgloc.STATIONARY_REGION_ACTION_TRIGGERED";
 	private static final String INTENT_CATEGORY_GEOTRIGGER = "com.vresorts.cordova.bgloc.STATIONARY_REGION";
 	
+	
+	private static final String INTENT_ACTION_GEOTRIGGER_SANITY_CHECK = "com.vresorts.cordova.bgloc.SANITY_CHECK_ACTION_TRIGGERED";
 	
 	private static final String INTENT_HOST_GEOTRIGGER = "bgloc.cordova.vresorts.com";
 	private static final String INTENT_DATA_SCHEME_GEOTRIGGER = "geotrigger";
@@ -274,13 +278,13 @@ public class Geotrigger extends BroadcastReceiver{
 		this.isEnabled = false;
 	}
 	
-	private PendingIntent getPendingIntentByPlace(Place place, boolean toCreate){
-		if(place == null){
+	private PendingIntent getPendingIntentByPlace(Place place, Intent intent, boolean toCreate){
+		if(place == null || intent == null){
 			return null;
 		}
-		
-		Intent intent = new Intent(INTENT_ACTION_GEOTRIGGER);
-		intent.addCategory(INTENT_CATEGORY_GEOTRIGGER);
+//		
+//		Intent intent = new Intent(INTENT_ACTION_GEOTRIGGER);
+//		intent.addCategory(INTENT_CATEGORY_GEOTRIGGER);
 		Uri.Builder builder = new Uri.Builder();
 		builder.scheme(INTENT_DATA_SCHEME_GEOTRIGGER);
 		builder.authority(INTENT_HOST_GEOTRIGGER);
@@ -348,7 +352,9 @@ public class Geotrigger extends BroadcastReceiver{
 	private void registerPlace(Place place){
 		Geofence geofence = place.getGeofence();
 		if(geofence!= null){
-		PendingIntent stationaryRegionPI = this.getPendingIntentByPlace(place, true);
+		Intent intent = new Intent(INTENT_ACTION_GEOTRIGGER_STATIONARY_PROXIMITY_ALERT);
+		intent.addCategory(INTENT_CATEGORY_GEOTRIGGER);
+		PendingIntent stationaryRegionPI = this.getPendingIntentByPlace(place,intent, true);
 		locationManager.addProximityAlert(
                 geofence.getLatitude(),
                 geofence.getLongitude(),
@@ -360,7 +366,9 @@ public class Geotrigger extends BroadcastReceiver{
 	}
 	
 	private void unregisterPlace(Place place){
-		PendingIntent pendingIntent = this.getPendingIntentByPlace(place, false);
+		Intent intent = new Intent(INTENT_ACTION_GEOTRIGGER_STATIONARY_PROXIMITY_ALERT);
+		intent.addCategory(INTENT_CATEGORY_GEOTRIGGER);
+		PendingIntent pendingIntent = this.getPendingIntentByPlace(place, intent, false);
 		if(pendingIntent != null){
 			this.locationManager.removeProximityAlert(pendingIntent);
 			Log.v(Config.TAG, place.getPlaceName()+" removed");
@@ -422,16 +430,88 @@ public class Geotrigger extends BroadcastReceiver{
 			return false;
 	}
 	
+	
 public static final String INTENT_EXTRA_FIELD_PLACE = "place";
+public static final float ACCURACY = 300F;
+
+
+IGeotriggerListener geotriggerListener = new GeotriggerListener(context);
+
+ 	private void onPlaceTriggered(Place place, boolean entering){
 	
-	
+		if(entering){
+		 Log.d(Config.TAG, "- ENTER");
+         place.timeStamp();
+         geotriggerListener.onEnter(place, place.getTimeStamp());
+
+			// to just enable the notifications once, delete the place from tripplan.
+         Geotrigger geotrigger = new Geotrigger(context);
+         if(geotrigger != null){
+         boolean isDeleted = geotrigger.deletePlace(place.getUuid());
+         if(isDeleted){
+         	geotrigger.onPause();
+         }
+         }
+		} else if(!entering){
+            Log.d(Config.TAG, "- EXIT");
+            long enterTime = place.getTimeStamp();
+            place.timeStamp();
+            long duration = place.getTimeStamp() - enterTime;
+            geotriggerListener.onExit(place, place.getTimeStamp(), duration);
+        }
+ 	}
 
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		    Log.i(Config.TAG, "stationaryRegionReceiver");
-	            String key = LocationManager.KEY_PROXIMITY_ENTERING;
+		    
+		    String action = intent.getAction();
+		    if(action.equals(INTENT_ACTION_GEOTRIGGER_STATIONARY_PROXIMITY_ALERT)){
+		    	
+	            
+	            Location location = (Location)intent.getExtras().get(LocationManager.KEY_LOCATION_CHANGED);
+	            Boolean entering = intent.getBooleanExtra(LocationManager.KEY_PROXIMITY_ENTERING, false);
+	            
+	            
+	            String placeData = intent.getStringExtra(INTENT_EXTRA_FIELD_PLACE);
+	            if(placeData == null){
+	            	return;
+	            }
+	            
+	            if (entering){
+	            	Place place = null;
+	            	try {
+	        			PlaceParser placeParser = new PlaceParser(placeData);
+	                   place = placeParser.getPlace();
+	        		} catch (Exception e) {
+	        			e.printStackTrace();
+	        		}
+	        		
+	        		if(place == null){
+	        			Log.v(Config.TAG, "place is null");
+	        			return;
+	        		}
+	        		
+	            if(location.getAccuracy() <= ACCURACY) {
+	            	
+	        		
+	            	this.onPlaceTriggered(place, true);
+	            }else {
+	            	LocationManager locationManager = (LocationManager)context.getSystemService(Context.LOCATION_SERVICE);
+	            	Criteria criteria = new Criteria();
+	            	criteria.setHorizontalAccuracy(Criteria.ACCURACY_HIGH);
+	        		Intent sanityCheckIntent = new Intent(INTENT_ACTION_GEOTRIGGER_SANITY_CHECK);
+	        		sanityCheckIntent.addCategory(INTENT_CATEGORY_GEOTRIGGER);
+	            	locationManager.requestSingleUpdate(criteria, getPendingIntentByPlace(place,sanityCheckIntent, true));
+	            }
+	            }
 
-	            Boolean entering = intent.getBooleanExtra(key, false);
+				
+		    }
+		    else if(action.equals(INTENT_ACTION_GEOTRIGGER_SANITY_CHECK)){
+	            
+	            String key = LocationManager.KEY_LOCATION_CHANGED;
+	            Location location = (Location)intent.getExtras().get(key);
 	            
 	            String placeData = intent.getStringExtra(INTENT_EXTRA_FIELD_PLACE);
 	            if(placeData == null){
@@ -439,42 +519,24 @@ public static final String INTENT_EXTRA_FIELD_PLACE = "place";
 	            }
 	            
 	            Place place = null;
-				try {
-					PlaceParser placeParser = new PlaceParser(placeData);
-
-		             place = placeParser.getPlace();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-				
-				if(place == null){
-					Log.v(Config.TAG, "place is null");
-					return;
-				}
+	    		try {
+	    			PlaceParser placeParser = new PlaceParser(placeData);
+	               place = placeParser.getPlace();
+	    		} catch (Exception e) {
+	    			e.printStackTrace();
+	    		}
+	    		
+	    		if(place == null){
+	    			Log.v(Config.TAG, "place is null");
+	    			return;
+	    		}
+	    		
+	    		if(place.isLocatedIn(location)){
+	    			
+	    		}
 	            
-	            IGeotriggerListener geotriggerListener = new GeotriggerListener(context);
-
-	            if (entering) {
-	                Log.d(Config.TAG, "- ENTER");
-	                place.timeStamp();
-	                geotriggerListener.onEnter(place, place.getTimeStamp());
-
-	    			// to just enable the notifications once, delete the place from tripplan.
-	                Geotrigger geotrigger = new Geotrigger(context);
-	                if(geotrigger != null){
-	                boolean isDeleted = geotrigger.deletePlace(place.getUuid());
-	                if(isDeleted){
-	                	geotrigger.onPause();
-	                }
-	                }
-	            }
-	            else if (!entering){
-	                Log.d(Config.TAG, "- EXIT");
-	                long enterTime = place.getTimeStamp();
-	                place.timeStamp();
-	                long duration = place.getTimeStamp() - enterTime;
-	                geotriggerListener.onExit(place, place.getTimeStamp(), duration);
-	            }
+	            
+		    }
 	            
 		
 	}
