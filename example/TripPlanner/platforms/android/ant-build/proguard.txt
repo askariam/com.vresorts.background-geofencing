@@ -1,4 +1,5 @@
 # view AndroidManifest.xml #generated:16
+# view AndroidManifest.xml #generated:28
 -keep class com.vresorts.cordova.bgloc.Geotrigger { <init>(...); }
 
 # view AndroidManifest.xml #generated:6

@@ -278,7 +278,7 @@ public class Geotrigger extends BroadcastReceiver{
 		this.isEnabled = false;
 	}
 	
-	private PendingIntent getPendingIntentByPlace(Place place, Intent intent, boolean toCreate){
+	private static PendingIntent getPendingIntentByPlace(Context context, Place place, Intent intent, boolean toCreate){
 		if(place == null || intent == null){
 			return null;
 		}
@@ -354,7 +354,7 @@ public class Geotrigger extends BroadcastReceiver{
 		if(geofence!= null){
 		Intent intent = new Intent(INTENT_ACTION_GEOTRIGGER_STATIONARY_PROXIMITY_ALERT);
 		intent.addCategory(INTENT_CATEGORY_GEOTRIGGER);
-		PendingIntent stationaryRegionPI = this.getPendingIntentByPlace(place,intent, true);
+		PendingIntent stationaryRegionPI = getPendingIntentByPlace(context, place,intent, true);
 		locationManager.addProximityAlert(
                 geofence.getLatitude(),
                 geofence.getLongitude(),
@@ -368,7 +368,7 @@ public class Geotrigger extends BroadcastReceiver{
 	private void unregisterPlace(Place place){
 		Intent intent = new Intent(INTENT_ACTION_GEOTRIGGER_STATIONARY_PROXIMITY_ALERT);
 		intent.addCategory(INTENT_CATEGORY_GEOTRIGGER);
-		PendingIntent pendingIntent = this.getPendingIntentByPlace(place, intent, false);
+		PendingIntent pendingIntent = getPendingIntentByPlace(context, place, intent, false);
 		if(pendingIntent != null){
 			this.locationManager.removeProximityAlert(pendingIntent);
 			Log.v(Config.TAG, place.getPlaceName()+" removed");
@@ -435,14 +435,18 @@ public static final String INTENT_EXTRA_FIELD_PLACE = "place";
 public static final float ACCURACY = 300F;
 
 
-IGeotriggerListener geotriggerListener = new GeotriggerListener(context);
+IGeotriggerListener geotriggerListener;
 
- 	private void onPlaceTriggered(Place place, boolean entering){
-	
+ private void onPlaceTriggered(Place place, boolean entering){
+	 
+	 	geotriggerListener = new GeotriggerListener(context);
 		if(entering){
 		 Log.d(Config.TAG, "- ENTER");
          place.timeStamp();
+         
+         if(geotriggerListener != null){
          geotriggerListener.onEnter(place, place.getTimeStamp());
+         }
 
 			// to just enable the notifications once, delete the place from tripplan.
          Geotrigger geotrigger = new Geotrigger(context);
@@ -457,7 +461,9 @@ IGeotriggerListener geotriggerListener = new GeotriggerListener(context);
             long enterTime = place.getTimeStamp();
             place.timeStamp();
             long duration = place.getTimeStamp() - enterTime;
+            if(geotriggerListener != null){
             geotriggerListener.onExit(place, place.getTimeStamp(), duration);
+            }
         }
  	}
 
@@ -465,11 +471,13 @@ IGeotriggerListener geotriggerListener = new GeotriggerListener(context);
 	public void onReceive(Context context, Intent intent) {
 		    Log.i(Config.TAG, "stationaryRegionReceiver");
 		    
+		    this.context = context;
+		    
 		    String action = intent.getAction();
 		    if(action.equals(INTENT_ACTION_GEOTRIGGER_STATIONARY_PROXIMITY_ALERT)){
 		    	
 	            
-	            Location location = (Location)intent.getExtras().get(LocationManager.KEY_LOCATION_CHANGED);
+//	            Location location = (Location)intent.getExtras().get(LocationManager.KEY_LOCATION_CHANGED);
 	            Boolean entering = intent.getBooleanExtra(LocationManager.KEY_PROXIMITY_ENTERING, false);
 	            
 	            
@@ -492,18 +500,18 @@ IGeotriggerListener geotriggerListener = new GeotriggerListener(context);
 	        			return;
 	        		}
 	        		
-	            if(location.getAccuracy() <= ACCURACY) {
-	            	
-	        		
-	            	this.onPlaceTriggered(place, true);
-	            }else {
+//	            if(location.getAccuracy() <= ACCURACY) {
+//	            	
+//	        		
+//	            	this.onPlaceTriggered(place, true);
+//	            }else {
 	            	LocationManager locationManager = (LocationManager)context.getSystemService(Context.LOCATION_SERVICE);
 	            	Criteria criteria = new Criteria();
 	            	criteria.setHorizontalAccuracy(Criteria.ACCURACY_HIGH);
 	        		Intent sanityCheckIntent = new Intent(INTENT_ACTION_GEOTRIGGER_SANITY_CHECK);
 	        		sanityCheckIntent.addCategory(INTENT_CATEGORY_GEOTRIGGER);
-	            	locationManager.requestSingleUpdate(criteria, getPendingIntentByPlace(place,sanityCheckIntent, true));
-	            }
+	            	locationManager.requestSingleUpdate(criteria, getPendingIntentByPlace(context, place,sanityCheckIntent, true));
+//	            }
 	            }
 
 				
@@ -532,7 +540,7 @@ IGeotriggerListener geotriggerListener = new GeotriggerListener(context);
 	    		}
 	    		
 	    		if(place.isLocatedIn(location)){
-	    			
+	    			this.onPlaceTriggered(place, true);
 	    		}
 	            
 	            

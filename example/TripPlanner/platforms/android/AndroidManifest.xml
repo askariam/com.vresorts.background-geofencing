@@ -19,6 +19,11 @@
                 <category android:name="com.vresorts.cordova.bgloc.STATIONARY_REGION" />
                 <data android:host="bgloc.cordova.vresorts.com" android:scheme="geotrigger" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="com.vresorts.cordova.bgloc.SANITY_CHECK_ACTION_TRIGGERED" />
+                <category android:name="com.vresorts.cordova.bgloc.STATIONARY_REGION" />
+                <data android:host="bgloc.cordova.vresorts.com" android:scheme="geotrigger" />
+            </intent-filter>
         </receiver>
     </application>
     <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="19" />
