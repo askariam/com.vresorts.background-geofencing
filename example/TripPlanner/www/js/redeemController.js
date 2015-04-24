@@ -27,7 +27,7 @@ function getCouponClicked(offerID, partnerID, couponImage){
     
     readOffer(offerID, function() {
               //display coupon
-              $('#div_coupon_image').append('<img src="data:image/png;base64,' + couponImage + '" height="640px" width="480px" />');
+              $('#div_coupon_image').append('<img src="data:image/png;base64,' + couponImage + '" height="100%" width="100%" position="relative" />');
               $('#div_coupon_barcode').barcode(CouponCode, "code93",{barWidth:1, barHeight:50});
               $('#div_coupon_storecode').append('<h4>Store code: ' + window.globalID.couponEncode.substr(0,3)
                                                 + window.globalID.couponEncode.slice(-3)+ '</h4>');
@@ -47,7 +47,7 @@ function getCouponClicked(offerID, partnerID, couponImage){
 // pushing the transaction to server
 function pushTransaction(){
     
-    $.getJSON('http://xixixhalu-test.apigee.net/proxy/tripPlanner/postTransaction?coupon_code='+ CouponCode +'&partner_uuid='+ myPartnerID + '&offer_uuid='+ myOfferID + '&user_uuid='+ localStorage.userUUID, function(resp) {
+    $.getJSON(window.globalURL + '/postTransaction?coupon_code='+ CouponCode +'&partner_uuid='+ myPartnerID + '&offer_uuid='+ myOfferID + '&user_uuid='+ localStorage.userUUID, function(resp) {
               
               if(resp.Success != undefined){
               respMsg = "success";

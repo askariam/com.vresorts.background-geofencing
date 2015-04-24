@@ -21,7 +21,7 @@ function passwordClicked(uuid, place_name) {
     $("#div_password_info").append("<input type='password' pattern='[0-9]*' inputmode='numeric' name='password' id='offer_password' value='' placeholder='PASSWORD'>");
     $("#popup_password").popup("open");
     //Performance note: call on local data will be faster --> wating for improvement
-    $.getJSON("http://xixixhalu-test.apigee.net/proxy/tripPlanner/getPlaces?trip_plan_uuid=" + window.globalID.tripPlanuuid, function(tripplan){
+    $.getJSON(window.globalURL + "/getPlaces?trip_plan_uuid=" + window.globalID.tripPlanuuid, function(tripplan){
               $.each(tripplan.places, function(i, item){
                      var tmpID = item.uuid;
                      var tmpIsSub = item.is_subscribed;
@@ -32,7 +32,7 @@ function passwordClicked(uuid, place_name) {
             })
     });
     
-    $.getJSON("http://xixixhalu-test.apigee.net/proxy/tripPlanner/getOffer2?offer_uuid="+ window.globalID.offeruuid, function(offer){
+    $.getJSON(window.globalURL + "/getOffer2?offer_uuid="+ window.globalID.offeruuid, function(offer){
               redeemPassword = offer.redeem_password;
               partnerUUID = offer.partner_uuid;
               couponIMAGE = offer.coupon.image_data;
@@ -377,7 +377,7 @@ function onError(error) {
 //Trajon Track plugin updating tail
 
 function getStoreLocation(){
-    $.getJSON("http://xixixhalu-test.apigee.net/proxy/tripPlanner/getPlaces?trip_plan_uuid="+ window.globalID.tripPlanuuid, function(json){
+    $.getJSON(window.globalURL + "/getPlaces?trip_plan_uuid="+ window.globalID.tripPlanuuid, function(json){
         //alert("JSON Data: " + json.places[0].place_name);
         storeLocation = json;
         calculateSleepTimeETA(); 

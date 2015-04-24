@@ -6,5 +6,5 @@ var globalID = {
 //        couponImage: = "undefined",
         couponEncode: "undefined"
 };
-
+window.globalURL = "http://xixixhalu-test.apigee.net/proxy/tripPlanner";
 window.globalID = globalID;
