@@ -50,7 +50,8 @@ function passwordCheck(){
         alert("Wrong password, please try again");
     }
 }
-
+//All the following function has been moved to background by Kan and Chien
+/*
 //Network stats variables initialization
 //Put Imran's code here
 var wifiGood=false;
@@ -85,9 +86,9 @@ var dataConnectionGood=true;
 var storeLocation = "undefined";  //Local Datastructure
 var displayString;
 
-/** Converts numeric degrees to radians */
+// Converts numeric degrees to radians 
 function toRad(Value) {
-    /** Converts numeric degrees to radians */
+    //Converts numeric degrees to radians
     return Value * Math.PI / 180;
 }
 
@@ -383,3 +384,4 @@ function getStoreLocation(){
         calculateSleepTimeETA(); 
     });
 }
+*/
