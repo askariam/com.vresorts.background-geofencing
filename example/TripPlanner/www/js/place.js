@@ -41,7 +41,7 @@ function togglePlaceSubscription(placeUUID) {
     function togglePlaceSubscriptionSuccessCB(place) {
     	 var unsubscribeData = {};
          unsubscribeData.type = "place";
-         unsubscribeData.uuid = placeUUID;
+         unsubscribeData.place_uuid = placeUUID;
 
          if(place.is_subscribed =="true") {
             $.ajax({
