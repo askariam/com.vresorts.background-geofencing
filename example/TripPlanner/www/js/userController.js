@@ -79,7 +79,11 @@ function userLoginClicked() {
     var loginData = $("#form_user_login").serializeObject();
     userLogin(loginData, userLoginSuccessCB, userLoginErrorCB);
 }
-
+function anonymousLoginClicked() {
+    $.getJSON(window.globalURL + "/anonymousLogin?device_id=" + device.uuid, function(anonymousUser){
+        anonymousLogin(anonymousUser,userLoginSuccessCB, userLoginErrorCB);
+    });
+}
 // createUserClicked - when the create user button is clicked, gets the
 // info from the form and performs one last validation, then creates the user if
 // the form is valid.

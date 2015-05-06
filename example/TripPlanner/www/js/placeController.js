@@ -44,7 +44,7 @@ function loadPlaces(tripPlanUUID) {
     
         $("#list_view_places").empty();
 
-        placesList.forEach( function(place) {
+        placesList.forEach(function(place) {
             if(place.offer_uuid != "0") {
                 var offerDetail = 
                     "<a href='#' data-role='button' data-mini='true' style='width:40px;' "

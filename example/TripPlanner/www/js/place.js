@@ -50,6 +50,7 @@ function togglePlaceSubscription(placeUUID) {
                 url: window.globalURL + "/disablePlaceSubscription",
                 data: unsubscribeData,
                 success: function(data){
+                    console.log("backgroundGeofencing disablePlace!!");
                     window.plugins.backgroundGeofencing.disablePlace(function(){},function(){},{"place_uuid": placeUUID});
                 },
                 failure: function(errMsg) {}
@@ -61,7 +62,8 @@ function togglePlaceSubscription(placeUUID) {
                 dataType: "json",
                 url: window.globalURL + "/enablePlaceSubscription",
                 data: unsubscribeData,
-                success: function(data){
+                success: function(data){                    
+                    console.log("backgroundGeofencing enablePlace!!");
                     window.plugins.backgroundGeofencing.enablePlace(function(){},function(){},{"place_uuid": placeUUID});
                 },
                 failure: function(errMsg) {}
