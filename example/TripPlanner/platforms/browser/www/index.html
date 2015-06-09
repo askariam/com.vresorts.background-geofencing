@@ -75,9 +75,9 @@
             var IS_LOGGED_IN = false;
             var IS_PARAMS = false;
             var LOCAL_STORAGE_SUPPORTED = false;
-            
-            
+
         function initialize() {
+
             $("#page_user_auto_login").bind("pagebeforeshow", function(event) {
                     autoLogin();
                 });
@@ -233,6 +233,7 @@
                     <br>
                     <a data-role="button" onclick="userLoginClicked();">Log In</a>
                 </form>
+                <a data-role="button" onclick="anonymousLoginClicked();">Anonymous Login</a>
             </div>
         </div>
         
@@ -394,18 +395,24 @@
             <div data-role="content" id="div_view_offer_detail"></div>
         </div>
         
-        
         <div data-role="page" id="page_coupon">
             <div data-role="header">
                 <h1>Coupon</h1>
             </div>
-            <div id="div_coupon_container">
+        
+            <div data-role="main" id="div_coupon_container">
                 <div id="div_coupon_image"></div>
-                <div id="div_coupon_storecode"  style=" position:absolute; top: 58%; left:30%;"></div>
-                <div id="div_coupon_barcode" style=" position:absolute; top: 65%; left:29%;"></div>
-                <a data-role="button" data-rel="back" href="#" data-icon="back">Go Back</a>
+                <div id="div_coupon_storecode"  style=" position:absolute; top: 60%; left:32%;"></div>
+                <div id="div_coupon_barcode" style=" position:absolute; top: 70%; left:25%;"></div>
+            </div>
+        
+            <div data-role="footer" data-position="fixed">
+                <div data-role="controlgroup" data-type="horizontal" align="center">
+                    <a data-role="button" data-rel="back" href="#" data-icon="back">Go Back</a>
+                </div>
             </div>
         </div>
+
 
         <div data-role="popup" id="popup_password" class="ui-corner-all"style="background-color:white;" >
             <div data-role="header" id="div_password_name"></div>

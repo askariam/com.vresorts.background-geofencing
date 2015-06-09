@@ -26,7 +26,7 @@ function loadPlaces(tripPlanUUID) {
 	if(tripPlanUUID !== "undefined") {
     }
     else {
-        $('#list_view_places').empty();
+        $("#list_view_places").empty();
         $("#list_view_places").append("<li>No active trip plan selected. Select a trip plan from the box above.</li>");
         $("#list_view_places").listview("refresh"); 
         return;
@@ -44,7 +44,7 @@ function loadPlaces(tripPlanUUID) {
     
         $("#list_view_places").empty();
 
-        placesList.forEach( function(place) {
+        placesList.forEach(function(place) {
             if(place.offer_uuid != "0") {
                 var offerDetail = 
                     "<a href='#' data-role='button' data-mini='true' style='width:40px;' "
