@@ -17,11 +17,12 @@ function doUserLogin(loginObj, successCB, errorCB) {
 
     CLIENT.login(loginObj.username, loginObj.password, function (error,response) {
         if (error) {
+            console.log(error);
             errorCB();
         }
         else {
             CLIENT.getLoggedInUser( function(error, data, user) {
-                if(!error && (user.get("account_type") == "user") ) {
+                if(!error && (user.get("account_type") == "user")) {
                     USER_UUID = user.get("uuid");
                     // If local storage is supported by this browser, this writes the
                     // USER_UUID to it, to enable adding places to trip plans. If local
@@ -39,7 +40,18 @@ function doUserLogin(loginObj, successCB, errorCB) {
         }
     });
 }
-
+function anonymousLogin(anonymousUser, successCB, errorCB){
+    if(anonymousUser.account_type == "anonymous_user") {
+        USER_UUID = anonymousUser.uuid;
+        if(typeof(Storage)!=="undefined") {
+            localStorage.userUUID = USER_UUID;
+        }
+        successCB();
+    }
+    else {
+        errorCB();
+    }
+}
 // Posts a new user account. Both callbacks have no arguments.
 function postNewUser(createUserObj, successCB, errorCB) {
     var createUserData = {};
