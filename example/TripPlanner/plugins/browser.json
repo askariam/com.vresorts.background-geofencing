@@ -1,0 +1,15 @@
+{
+    "prepare_queue": {
+        "installed": [],
+        "uninstalled": []
+    },
+    "config_munge": {
+        "files": {}
+    },
+    "installed_plugins": {
+        "com.vresorts.background-geofencing": {
+            "PACKAGE_NAME": "com.vresorts.tripplan"
+        }
+    },
+    "dependent_plugins": {}
+}

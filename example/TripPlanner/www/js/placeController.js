@@ -26,7 +26,7 @@ function loadPlaces(tripPlanUUID) {
 	if(tripPlanUUID !== "undefined") {
     }
     else {
-        $('#list_view_places').empty();
+        $("#list_view_places").empty();
         $("#list_view_places").append("<li>No active trip plan selected. Select a trip plan from the box above.</li>");
         $("#list_view_places").listview("refresh"); 
         return;
