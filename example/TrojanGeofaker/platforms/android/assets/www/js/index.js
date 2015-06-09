@@ -124,7 +124,7 @@ var app = {
     		return;
     	}
     	
-        var coordinates = {latitude: event.latLng.k, longitude:event.latLng.D};
+        var coordinates = {latitude: event.latLng.lat(), longitude:event.latLng.lng()};
         
         currentLocationDisplay[0].innerHTML = "current locaton: lat="+coordinates.latitude+", lng="+coordinates.longitude;
 
@@ -335,6 +335,7 @@ var app = {
     	var places = tripPlan.places;
     	for(var i in places){
     		var geofence = places[i].geofence;
+    		if(geofence){
     		var circleOptions = {
     			      strokeColor: '#3366c',
     			      strokeOpacity: 0.8,
@@ -351,6 +352,7 @@ var app = {
             	app.onMapClick(app.map, event);
             });
     		app.geofences.push(circleObject);
+    	}
     	}
     	
     },

@@ -59,6 +59,12 @@
             </intent-filter>
         </receiver>
         </config-file>
+        
+          <config-file target="AndroidManifest.xml" parent="/manifest/application">
+          <service
+            android:name="com.vresorts.cordova.bgloc.TripPlanSyncService"
+            android:exported="false"/>
+          </config-file>
 
         <config-file target="AndroidManifest.xml" parent="/manifest">
             <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
