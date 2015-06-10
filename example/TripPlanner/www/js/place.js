@@ -36,43 +36,49 @@ function deleteAllPlacesBelongingToTripPlan(tripPlanUUID, successCB, errorCB) {
     deleteEntities("place", "trip_plan_uuid", tripPlanUUID, successCB, errorCB);
 }
 
-//Trajon Track plugin updating head
 function togglePlaceSubscription(placeUUID) {
 	
     function togglePlaceSubscriptionSuccessCB(place) {
     	 var unsubscribeData = {};
          unsubscribeData.type = "place";
-         unsubscribeData.uuid = placeUUID;
-
+         unsubscribeData.place_uuid = placeUUID;
 
          if(place.is_subscribed =="true") {
-
-        	 unsubscribeData.is_subscribed = "false";
+            $.ajax({
+                type: "PUT", 
+                dataType: "json",
+                url: window.globalURL + "/disablePlaceSubscription",
+                data: unsubscribeData,
+                success: function(data){
+                    console.log("backgroundGeofencing disablePlace!!");
+                    window.plugins.backgroundGeofencing.disablePlace(function(){},function(){},{"place_uuid": placeUUID});
+                },
+                failure: function(errMsg) {}
+            });
          }
          else {
-        	unsubscribeData.is_subscribed = "true";
+            $.ajax({
+                type: "PUT", 
+                dataType: "json",
+                url: window.globalURL + "/enablePlaceSubscription",
+                data: unsubscribeData,
+                success: function(data){                    
+                    console.log("backgroundGeofencing enablePlace!!");
+                    window.plugins.backgroundGeofencing.enablePlace(function(){},function(){},{"place_uuid": placeUUID});
+                },
+                failure: function(errMsg) {}
+            });
          }
-
-         
-        function scb(place) {
-        	 if(place.is_subscribed =="true") {
-            	 window.plugins.backgroundGeofencing.enablePlace(function(){},function(){},{"place_uuid": placeUUID});
-             }
-             else {
-            	 window.plugins.backgroundGeofencing.disablePlace(function(){},function(){},{"place_uuid": placeUUID});
-             }
-        }
-        function ecb() {}
-        
-        modifyEntity(unsubscribeData, scb, ecb);
     }
 
     function togglePlaceSubscriptionErrorCB() {
         // Do nothing.
     }
    
-    getEntity("place", placeUUID, PLACE_ATTRIBUTES, togglePlaceSubscriptionSuccessCB, togglePlaceSubscriptionErrorCB);
+    //getEntity("place", placeUUID, PLACE_ATTRIBUTES, togglePlaceSubscriptionSuccessCB, togglePlaceSubscriptionErrorCB);
+    $.getJSON(window.globalURL + "/getPlace?place_uuid=" + placeUUID, function(place){
+        togglePlaceSubscriptionSuccessCB(place);
+    });
 }
-//Trajon Track plugin updating tail
 
 

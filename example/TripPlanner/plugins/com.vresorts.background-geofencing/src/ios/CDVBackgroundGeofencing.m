@@ -11,6 +11,14 @@
 // http://iphonedevwiki.net/index.php/AudioServices
 #define msgreceived            1307
 
+@implementation NSString (Contains)
+
+- (BOOL)myContainsString:(NSString*)other {
+    NSRange range = [self rangeOfString:other];
+    return range.length != 0;
+}
+
+@end
 
 @implementation CDVBackgroundGeofencing {
     
@@ -18,13 +26,13 @@
     NSDate *lastBgTaskAt;
     NSError *locationError;
     UILocalNotification *localNotification;
-    
+    NSNotificationCenter *notification_center;
     CDVLocationData *locationData;
     CLLocation *lastLocation;
     NSInteger locationAcquisitionAttempts;
     
     CLActivityType activityType;
-    NSMutableDictionary *place_name_map;
+    NSMutableDictionary *uuid_map;
     NSMutableDictionary *offer_uuid_map;
     NSMutableDictionary *lat_map;
     NSMutableDictionary *lon_map;
@@ -40,7 +48,7 @@
 @synthesize lat_map = lat_map;
 @synthesize lon_map = lon_map;
 @synthesize radius_map = raduis_map;
-@synthesize place_name_map = place_name_map;
+@synthesize uuid_map = uuid_map;
 @synthesize notification_map = notification_map;
 - (void)pluginInitialize
 {
@@ -49,6 +57,8 @@
     [super pluginInitialize];
     
     bgTask = UIBackgroundTaskInvalid;
+    
+    notification_center = [NSNotificationCenter defaultCenter];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onSuspend:) name:UIApplicationDidEnterBackgroundNotification object:nil];
     
@@ -60,11 +70,9 @@
 -(void)locationManagerSetup
 {
     if(!self.locationManager) self.locationManager = [[CLLocationManager alloc] init];
-    self.locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters;
-    self.locationManager.distanceFilter = 10; // meters
+    self.locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters;
+    self.locationManager.distanceFilter = 50; // meters
     self.locationManager.delegate = self;
-    [self.locationManager requestAlwaysAuthorization];
-    [self.locationManager requestWhenInUseAuthorization];
     
     geofences = [NSMutableArray arrayWithArray:[[self.locationManager monitoredRegions] allObjects]];
     
@@ -74,6 +82,7 @@
         if ([self.locationManager respondsToSelector:@selector(requestAlwaysAuthorization)]) {
             [self.locationManager requestAlwaysAuthorization];
         }
+        [self.locationManager requestWhenInUseAuthorization];
     }
     
     localNotification = [[UILocalNotification alloc] init];
@@ -82,12 +91,17 @@
 
 - (void) configure:(CDVInvokedUrlCommand*)command
 {
-    self.place_name_map = [NSMutableDictionary dictionaryWithCapacity:100];
+    self.uuid_map = [NSMutableDictionary dictionaryWithCapacity:100];
     self.offer_uuid_map = [NSMutableDictionary dictionaryWithCapacity:100];
     self.lat_map = [NSMutableDictionary dictionaryWithCapacity:100];
     self.lon_map = [NSMutableDictionary dictionaryWithCapacity:100];
     self.radius_map = [NSMutableDictionary dictionaryWithCapacity:100];
     self.notification_map = [NSMutableDictionary dictionaryWithCapacity:100];
+    
+    //delete the previous geofence point
+    for (CLRegion *monitored in [self.locationManager monitoredRegions])
+        [self.locationManager stopMonitoringForRegion:monitored];
+    
     
     //fetch json and add them into geofence data
     NSArray *array = [command arguments];
@@ -100,31 +114,38 @@
         if (geofence == NULL) {continue;}
         NSString *uuid = [results objectForKey:@"uuid"];
         NSString *name = [results objectForKey:@"place_name"];
-        NSNumber *latitude = [geofence objectForKey:@"latitude"];
-        NSNumber *longitude = [geofence objectForKey:@"longitude"];
+        NSString *latitude = [geofence objectForKey:@"latitude"];
+        NSString *longitude = [geofence objectForKey:@"longitude"];
         NSString *is_subscribed = [results objectForKey:@"is_subscribed"];
-        NSNumber *radius = [geofence objectForKey:@"radius"];
-        NSString *offer_uuid = [geofence objectForKey:@"offer_uuid"];
-        CLLocationCoordinate2D coord;
-        coord.longitude = (CLLocationDegrees)[longitude doubleValue];
-        coord.latitude = (CLLocationDegrees)[latitude doubleValue];
+        NSString *radius = [geofence objectForKey:@"radius"];
+        NSString *offer_uuid = [results objectForKey:@"offer_uuid"];
         //add the place information in map for later use
         //such as ufferuuid, raduis, lat_lon...
-        if(uuid !=nil)
+        if(uuid !=nil && offer_uuid != nil && longitude != nil && latitude != nil && radius != nil && name != nil)
         {
-            [place_name_map setObject:name forKey:uuid];
-            [offer_uuid_map setObject:offer_uuid forKey:uuid];
-            [lat_map setObject:latitude forKey:uuid];
-            [lon_map setObject:longitude forKey:uuid];
-            [raduis_map setObject:radius forKey:uuid];
+            NSNumberFormatter *f = [[NSNumberFormatter alloc] init];
+            f.numberStyle = NSNumberFormatterDecimalStyle;
+            NSNumber *lat = [f numberFromString:latitude];
+            NSNumber *lon = [f numberFromString:longitude];
+            NSNumber *rad = [f numberFromString:radius];
+
+            CLLocationCoordinate2D coord;
+            coord.longitude = (CLLocationDegrees)[lon doubleValue];
+            coord.latitude = (CLLocationDegrees)[lat doubleValue];
             
-            if ([is_subscribed containsString:@"true"])
+            [uuid_map setObject:uuid forKey:name];
+            [offer_uuid_map setObject:offer_uuid forKey:name];
+            [lat_map setObject:lat forKey:name];
+            [lon_map setObject:lon forKey:name];
+            [raduis_map setObject:rad forKey:name];
+            
+            if ([is_subscribed myContainsString:@"true"])
             {
-                [self addPlace:coord name:uuid radius:radius];
+                [self addPlace:coord name:name radius:rad];
             }
             else
             {
-                [self disablePlace:coord name:uuid radius:radius];
+                [self disablePlace:coord name:name radius:rad];
             }
         }
         
@@ -261,39 +282,46 @@
 - (void) didReceiveLocalNotification:(NSNotification *)notification
 {
     
-    NSString *key = [self regularexpforkey:notification];
-    NSString *message = [notification_map objectForKey:key];
-    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:message];
+    NSDictionary *dict = [[notification object]userInfo];
+    
+    NSError *error;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dict options:NSJSONWritingPrettyPrinted error:&error];
+    NSString *json_result = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+//    NSString *key = [self regularexpforkey:notification];
+//    NSString *message = [notification_map objectForKey:key];
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:json_result];
     [pluginResult setKeepCallbackAsBool:YES]; // here we tell Cordova not to cleanup the callback id after sendPluginResult()
     [self.commandDelegate sendPluginResult:pluginResult callbackId:callback_id];
     
 }
 
-- (NSString*) regularexpforkey:(NSNotification *)notification
-{
-    //NSLog(@"%@",notification.description);
-    NSString *datestring = (NSString *)notification.description;
-    NSRange start_date;
-    NSRange end_date;
-    //NSLog(@"datestring is = %@", datestring);
-    //capture the string part of date
-    //NSLog(@"datestring is =%@",datestring);
-    start_date = [datestring rangeOfString:@" at "];
-    end_date = [datestring rangeOfString:@", time zone"];
-    NSRange new_range;
-    new_range.length = end_date.location-start_date.location;
-    new_range.location = start_date.location;
-    NSString *key = [datestring substringWithRange:new_range];
-    //NSLog(@"key is = %@", key);
-    key = [key substringFromIndex:6];
-    //NSLog(@"key is = %@", key);
-    //strip all other character except digits
-    NSString *newString = [[key componentsSeparatedByCharactersInSet:
-                            [[NSCharacterSet decimalDigitCharacterSet] invertedSet]]
-                           componentsJoinedByString:@""];
-    //NSLog(@"%@",newString);
-    return newString;
-}
+
+
+//- (NSString*) regularexpforkey:(NSNotification *)notification
+//{
+//    NSLog(@"%@",notification.description);
+//    NSString *datestring = (NSString *)notification.description;
+//    NSRange start_date;
+//    NSRange end_date;
+//    //NSLog(@"datestring is = %@", datestring);
+//    //capture the string part of date
+//    //NSLog(@"datestring is =%@",datestring);
+//    start_date = [datestring rangeOfString:@" at "];
+//    end_date = [datestring rangeOfString:@", time zone"];
+//    NSRange new_range;
+//    new_range.length = end_date.location-start_date.location;
+//    new_range.location = start_date.location;
+//    NSString *key = [datestring substringWithRange:new_range];
+//    //NSLog(@"key is = %@", key);
+//    key = [key substringFromIndex:6];
+//    //NSLog(@"key is = %@", key);
+//    //strip all other character except digits
+//    NSString *newString = [[key componentsSeparatedByCharactersInSet:
+//                            [[NSCharacterSet decimalDigitCharacterSet] invertedSet]]
+//                           componentsJoinedByString:@""];
+//    //NSLog(@"%@",newString);
+//    return newString;
+//}
 
 
 
@@ -312,7 +340,7 @@
             name:(NSString *)name radius:(NSNumber *) radius{
     
     CLRegion *region = [[CLRegion alloc]initCircularRegionWithCenter:coordinate radius:[radius doubleValue] identifier:name];
-    NSLog(@"lat is %f and lon is %f and radius is %@ and name is %@",coordinate.latitude,coordinate.longitude,radius,name);
+    //NSLog(@"lat is %f and lon is %f and radius is %@ and name is %@",coordinate.latitude,coordinate.longitude,radius,name);
     [self.locationManager startMonitoringForRegion:region];
     
     //if([[self.locationManager monitoredRegions] count]<1)NSLog(@"No Monitored added!!!");
@@ -331,16 +359,19 @@
 {
     //AudioServicesPlaySystemSound (exitRegionSound);
     [self notify:region.identifier];
-    enterTime = [NSDate date];
+    //enterTime = [NSDate date];
+    
+    [self disablePlace:[region center] name:[region identifier] radius:[NSNumber numberWithDouble:[region radius]]];
 }
 
 - (void)locationManager:(CLLocationManager *)manager didExitRegion:(CLRegion *)region
 {
     //NSLog(@"- CDVBackgroundGeoLocation exit region");
-    NSDate *leaveTime = [NSDate date];
-    NSString *name = [place_name_map objectForKey:region.identifier];
-    NSTimeInterval stayingTime = [leaveTime timeIntervalSinceDate:enterTime];
+    //NSDate *leaveTime = [NSDate date];
+    //NSString *name = [place_name_map objectForKey:region.identifier];
+    //NSTimeInterval stayingTime = [leaveTime timeIntervalSinceDate:enterTime];
     //[self notify:[NSString stringWithFormat:@"Leaves %@, stays for %f",name,stayingTime]];
+    //[self.locationManager st]
 }
 
 
@@ -446,33 +477,22 @@
 
 - (void) notify:(NSString*)message
 {
-    localNotification.fireDate = [NSDate date];
-    
-    NSString *name = [place_name_map objectForKey:message];
-    localNotification.alertBody = [NSString stringWithFormat:@"You just got an offer from %@ !",name];
-    AudioServicesPlaySystemSound(msgreceived);
-    //localNotification.alertBody = @"Click to see more detail!";
-    [[UIApplication sharedApplication] scheduleLocalNotification:localNotification];
-    [self setupcallbacknotification:message];
-}
-
--(void) setupcallbacknotification:(NSString*)message
-{
     NSMutableDictionary *msg = [[NSMutableDictionary alloc]init];
     NSString *offer_id =[offer_uuid_map objectForKey:message];
-    NSString *place_name = [place_name_map objectForKey:message];
+    //NSString *place_name = [place_name_map objectForKey:message];
     [msg setObject:offer_id forKey:@"offerUuid"];
-    [msg setObject:place_name forKey:@"placeName"];
-    NSError *error;
-    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:msg options:NSJSONWritingPrettyPrinted error:&error];
-    NSString *json_result = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-    NSDateFormatter *dateformater = [[NSDateFormatter alloc]init];
-    [dateformater setDateFormat:@"mmss"];
-    NSString *stringDate = [dateformater stringFromDate:[NSDate date]];
-    //NSLog(@"date is %@",stringDate);
+    [msg setObject:message forKey:@"placeName"];
     
-    [notification_map setObject:json_result forKey:stringDate];
+    localNotification.fireDate = [NSDate date];
+    localNotification.userInfo = msg;
+    localNotification.alertBody = [NSString stringWithFormat:@"You just got an offer from %@ !",message];
+    
+    [[UIApplication sharedApplication] scheduleLocalNotification:localNotification];
+    AudioServicesPlaySystemSound(msgreceived);
+
 }
+
+
 /**
  * If you don't stopMonitoring when application terminates, the app will be awoken still when a
  * new location arrives, essentially monitoring the user's location even when they've killed the app.
@@ -527,6 +547,21 @@
 -(void) onPause:(NSNotification *) notification
 {
     NSLog(@"- CDVBackgroundGeoLocation onpause");
+}
+
+-(void) onPause
+{
+    
+}
+
+-(void) onResume
+{
+    
+}
+
+-(void) onReset
+{
+    
 }
 
 

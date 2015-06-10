@@ -10,7 +10,7 @@ function offerDetailsClicked(uuid) {
     $("#div_view_offer_img").empty();
     
     // Nested function definition for the success callback that goes to readOffer().
-    $.getJSON("http://xixixhalu-test.apigee.net/proxy/tripPlanner/getOffer?offer_uuid="+ uuid, function(offer){
+    $.getJSON(window.globalURL + "/getOffer?offer_uuid="+ uuid, function(offer){
 
               $("#div_view_offer_title").append("<center>" + offer.store_name + "</center>");
               

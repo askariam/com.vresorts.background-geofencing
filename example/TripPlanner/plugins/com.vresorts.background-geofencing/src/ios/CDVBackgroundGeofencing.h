@@ -12,7 +12,7 @@
 @property (nonatomic, strong) CLLocationManager* locationManager;
 @property (strong, nonatomic) NSMutableArray *geofences;
 @property (nonatomic, strong) NSString* syncCallbackId;
-@property (nonatomic, strong) NSMutableDictionary *place_name_map;
+@property (nonatomic, strong) NSMutableDictionary *uuid_map;
 @property (nonatomic, strong) NSMutableDictionary *offer_uuid_map;
 @property (nonatomic, strong) NSMutableDictionary *lat_map;
 @property (nonatomic, strong) NSMutableDictionary *lon_map;
@@ -32,6 +32,4 @@
 - (NSNumber*)calculateDistanceInMetersBetweenCoord:(CLLocationCoordinate2D)coord1 coord:(CLLocationCoordinate2D)coord2;
 - (void) onAppTerminate;
 - (void) didReceiveLocalNotification:(NSNotification *)notification;
--(void) setupcallbacknotification:(NSString*)message;
-- (NSString*) regularexpforkey:(NSNotification *)notification;
 @end

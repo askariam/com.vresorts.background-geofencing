@@ -14,25 +14,14 @@ $(document).ready(function() {
                   });
 
 function passwordClicked(uuid, place_name) {
-    $("#div_password").empty();
+    $("#div_password_name").empty();
+    $("#div_password_info").empty();
     window.globalID.offeruuid = uuid;
-    $("#div_password").append(
-                              "<h4 align='center'>"
-                              +place_name
-                              +"</h4>"
-                              +"<p>Please have a store employee enter the password to redeem your coupon!</p>"
-                              + "<label align='left'>Partner code </label>"
-                              + "<input type='password' name='password' id='offer_password' value='' placeholder='password' align='left'><br><br>"
-                              + "<button type='button' style='background-color:#EEEEEE; border-style:solid; border-color:#CCCCCC'; "
-                              + "onclick=\x22passwordCheck();\x22>Get Coupon</button>"
-                              + "<button type='button' style='background-color:#EEEEEE; border-style:solid; border-color:#CCCCCC'; "
-                              + "onclick=\x22$('#popup_password').popup('close');\x22>Close</button>"
-                              + "</div>"
-                              );
+    $("#div_password_name").append("<h2>"+place_name+"</h2>");
+    $("#div_password_info").append("<input type='password' pattern='[0-9]*' inputmode='numeric' name='password' id='offer_password' value='' placeholder='PASSWORD'>");
     $("#popup_password").popup("open");
-    
     //Performance note: call on local data will be faster --> wating for improvement
-    $.getJSON("http://xixixhalu-test.apigee.net/proxy/tripPlanner/getPlaces?trip_plan_uuid=" + window.globalID.tripPlanuuid, function(tripplan){
+    $.getJSON(window.globalURL + "/getPlaces?trip_plan_uuid=" + window.globalID.tripPlanuuid, function(tripplan){
               $.each(tripplan.places, function(i, item){
                      var tmpID = item.uuid;
                      var tmpIsSub = item.is_subscribed;
@@ -43,7 +32,7 @@ function passwordClicked(uuid, place_name) {
             })
     });
     
-    $.getJSON("http://xixixhalu-test.apigee.net/proxy/tripPlanner/getOffer2?offer_uuid="+ window.globalID.offeruuid, function(offer){
+    $.getJSON(window.globalURL + "/getOffer2?offer_uuid="+ window.globalID.offeruuid, function(offer){
               redeemPassword = offer.redeem_password;
               partnerUUID = offer.partner_uuid;
               couponIMAGE = offer.coupon.image_data;
@@ -61,7 +50,8 @@ function passwordCheck(){
         alert("Wrong password, please try again");
     }
 }
-
+//All the following function has been moved to background by Kan and Chien
+/*
 //Network stats variables initialization
 //Put Imran's code here
 var wifiGood=false;
@@ -96,9 +86,9 @@ var dataConnectionGood=true;
 var storeLocation = "undefined";  //Local Datastructure
 var displayString;
 
-/** Converts numeric degrees to radians */
+// Converts numeric degrees to radians 
 function toRad(Value) {
-    /** Converts numeric degrees to radians */
+    //Converts numeric degrees to radians
     return Value * Math.PI / 180;
 }
 
@@ -388,9 +378,10 @@ function onError(error) {
 //Trajon Track plugin updating tail
 
 function getStoreLocation(){
-    $.getJSON("http://xixixhalu-test.apigee.net/proxy/tripPlanner/getPlaces?trip_plan_uuid="+ window.globalID.tripPlanuuid, function(json){
+    $.getJSON(window.globalURL + "/getPlaces?trip_plan_uuid="+ window.globalID.tripPlanuuid, function(json){
         //alert("JSON Data: " + json.places[0].place_name);
         storeLocation = json;
         calculateSleepTimeETA(); 
     });
 }
+*/

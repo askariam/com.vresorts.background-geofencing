@@ -75,9 +75,9 @@
             var IS_LOGGED_IN = false;
             var IS_PARAMS = false;
             var LOCAL_STORAGE_SUPPORTED = false;
-            
-            
+
         function initialize() {
+
             $("#page_user_auto_login").bind("pagebeforeshow", function(event) {
                     autoLogin();
                 });
@@ -144,18 +144,15 @@
                     }
                 }
                 if(!LOCAL_STORAGE_SUPPORTED) {
-                    //alert("storage error");
                     $.mobile.changePage("#page_storage_error");
                 }
                 else if(IS_PARAMS && PARAMS.hasOwnProperty("place_name")) {
-                    //alert("add place name");
                     addPlace(PARAMS);
                 }
                 else if(IS_LOGGED_IN && IS_PARAMS && PARAMS.hasOwnProperty("map")) {
                     if(MAPS.hasOwnProperty(PARAMS.map)) {
                         ACTIVE_MAP = PARAMS.map;
                     }
-                    //alert("Page Display trip plan");
                     PARAMS = {};
                     $.mobile.changePage("#page_display_trip_plan");
                 }
@@ -164,19 +161,15 @@
                         ACTIVE_MAP = PARAMS.map;
                     }
                     PARAMS = {};
-                    //alert("Display map!");
                     $.mobile.changePage("#page_display_map");
                 }
                 else if(IS_LOGGED_IN && !IS_PARAMS) {
-                    //alert("Page Display trip plan2");
                     $.mobile.changePage("#page_display_trip_plan");
                 }
                 else {
             //        $.mobile.changePage("#page_user_start");
-                        //alert("user log in");
                     $.mobile.changePage("#page_user_login");
                 }
-                //alert("autoLogin end");
             }
             
             function completeLogout() {
@@ -240,6 +233,7 @@
                     <br>
                     <a data-role="button" onclick="userLoginClicked();">Log In</a>
                 </form>
+                <a data-role="button" onclick="anonymousLoginClicked();">Anonymous Login</a>
             </div>
         </div>
         
@@ -407,17 +401,19 @@
                 <h1>Coupon</h1>
             </div>
             <div id="div_coupon_container">
-                <div id="div_coupon_image" style="width:100%; position:relative;"></div>
-                <div id="div_coupon_storecode"  style=" position:absolute; top: 58%; left:30%;"></div>
-                <div id="div_coupon_barcode" style=" position:absolute; top: 65%; left:29%;"></div>
+                <div id="div_coupon_image"></div>
+                <div id="div_coupon_storecode"  style=" position:absolute; top: 60%; left:32%;"></div>
+                <div id="div_coupon_barcode" style=" position:absolute; top: 70%; left:25%;"></div>
                 <a data-role="button" data-rel="back" href="#" data-icon="back">Go Back</a>
             </div>
+        </div>
 
-       <div data-role="popup" id="popup_password" class="ui-corner-all">
-           <div style="width:100%; padding:5px 5px;background-color:white;" class="ui-corner-all" align="center" id="div_password">
-           </div>
-           <div id="div_password_message"></div>
-           </div>
+        <div data-role="popup" id="popup_password" class="ui-corner-all"style="background-color:white;" >
+            <div data-role="header" id="div_password_name"></div>
+            <p>Please have a store employee enter the password to redeem your coupon!</p>
+            <div id="div_password_info"></div>
+            <button align="left" onclick="passwordCheck();">Get Coupon</button>
+            <button align="right" onclick="$('#popup_password').popup('close');">Close</button>
         </div>
     </body>
     
